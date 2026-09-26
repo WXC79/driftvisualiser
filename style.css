@@ -56,3 +56,17 @@ input[type="range"] { width:100%; accent-color:#e8ebee; }
   .settings label { grid-template-columns:115px 1fr; }
   .lede { font-size:11px; }
 }
+
+.sceneModeRow select {
+  width: 48%;
+  min-width: 150px;
+  appearance: auto;
+  background: rgba(255,255,255,.08);
+  color: inherit;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 8px;
+  padding: 7px 9px;
+  font: inherit;
+  letter-spacing: .06em;
+}
+.sceneModeRow select option { color: #111; background: #eee; }
