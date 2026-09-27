@@ -10,8 +10,8 @@
   <meta name="apple-mobile-web-app-title" content="DRIFT" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
-  <meta name="description" content="DRIFT 13.0 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
-  <title>DRIFT 13.0 — Generative Music Visualiser</title>
+  <meta name="description" content="DRIFT 13.1 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
+  <title>DRIFT 13.1 — Generative Music Visualiser</title>
   <script>
     (function(){
       function standalone(){
@@ -41,7 +41,7 @@
       });
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=13.0" />
+  <link rel="stylesheet" href="style.css?v=13.1" />
 </head>
 <body>
   <canvas id="gl"></canvas>
@@ -50,7 +50,7 @@
   <main id="ui" class="ui visible">
     <section class="panel" id="landing">
       <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
-      <div class="brand">DRIFT 13.0</div>
+      <div class="brand">DRIFT 13.1</div>
       <h1>GENERATIVE CLOUD VISUALISER</h1>
       <p class="lede">Choose music from your device. The file stays local: nothing is uploaded.</p>
 
@@ -95,6 +95,9 @@
             <option value="7">NIGHT</option>
           </select>
         </label>
+        <label class="toggleRow"><span>Touch clouds</span>
+          <input id="touchToggle" type="checkbox" checked aria-label="Enable touch cloud generation" />
+        </label>
         <label><span>Visual intensity</span><input id="intensity" title="Adjust the strength of cloud motion and music response without changing the scene palette" type="range" min="0.5" max="1.35" value="1.08" step="0.01" /></label>
         <label><span>Forward motion</span><input id="speed" title="Adjust forward drift speed" type="range" min="0.65" max="1.55" value="1" step="0.01" /></label>
         <label><span>Grain</span><input id="grain" title="Adjust fine film-grain texture" type="range" min="0" max="2" value="1" step="0.01" /></label>
@@ -104,12 +107,12 @@
         <span id="status">Waiting for music</span>
         <span id="scene">BLUE SKY</span>
       </div>
-      <p class="hint"><strong>Double-tap the visual to toggle controls.</strong><br>Press and hold on the visual to gather cloud. Drag while holding to sculpt it into the world.</p>
+      <p class="hint"><strong>Double-tap the visual to toggle controls.</strong><br>Touch Clouds ON: press and hold to gather cloud; drag while holding to sculpt it into the world.</p>
     </section>
   </main>
 
   <audio id="audio" preload="metadata"></audio>
-  <script src="app.js?v=13.0"></script>
+  <script src="app.js?v=13.1"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));

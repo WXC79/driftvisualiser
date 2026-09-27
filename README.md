@@ -1,33 +1,25 @@
-# DRIFT 13.0 — Touch Clouds
+# DRIFT 13.1 — Touch Fixed + Transport Fixed
 
-Built from 12.11.17.
+Built directly from 13.0.
 
-Preserved:
-- 12.11.16 portrait fullscreen workaround
-- current logo/icon assets
-- boutique cloud Play/Pause control
-- sustained-rhythm audio response
-- existing scene timing and camera pacing
+Fixes:
+- Touch Clouds now has an explicit ON/OFF checkbox in Visual Settings (default ON).
+- Touch handling is bound at document level and accepts both the WebGL canvas and the empty UI backdrop, avoiding iOS routing the gesture to the transparent menu shell.
+- Hold threshold reduced to ~160 ms.
+- Initial wisp is stronger but still faint.
+- Continued hold grows both radius and density with no short ceiling.
+- Drag trail is denser, smoother, and spawns with closer spacing.
+- Touch density now has a guaranteed noisy volumetric contribution, so it remains visible even in an open patch of sky.
+- iOS selection/callout suppression retained.
 
-13.0 changes:
+Transport:
+- Play/Pause icon state no longer depends on `readyState >= 2`.
+- Button updates optimistically on Play, then reconciles with the real audio state.
+- Added `playing` and `canplay` synchronization.
+- Guards against overlapping rapid Play/Pause taps.
+- Background audio mute/pause/suspend protection retained.
 
-## Night
-- much flatter near-black / dark-blue background
-- reduced broad contour-band appearance
-- narrower, more local moon haze
-- retained intermittent moonlit cloud edges and bursts
+Night:
+- 13.0 flattened Night background retained.
 
-## Touch
-- quick double-tap toggles controls
-- press-and-hold (~280 ms) starts as a very faint local wisp
-- continued hold slowly gathers density and expands with no short artificial size ceiling
-- dragging moves the source through the scene and lays a soft overlapping trail
-- released clouds remain in world space, so normal camera travel can approach and pass through them
-- touch density is injected into the existing volumetric noise field rather than drawn as a 2D cloud sprite
-- iOS long-press selection / Copy-Look Up menu is suppressed
-
-## Background audio
-- when DRIFT is hidden, audio is muted before pause and the AudioContext is suspended
-- returning to DRIFT does not auto-unmute or auto-resume
-- only an explicit Play tap re-enables audio
-- intended to eliminate the brief old-audio burst seen when returning to the app
+No other scene/timing changes.

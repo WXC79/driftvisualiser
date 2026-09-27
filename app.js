@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '13.0';
+  const DRIFT_BUILD = '13.1';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -21,6 +21,7 @@
   const grainSlider = document.getElementById('grain');
   const sceneMode = document.getElementById('sceneMode');
   const closeUiBtn = document.getElementById('closeUiBtn');
+  const touchToggle = document.getElementById('touchToggle');
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
   if (isStandalone) {
@@ -117,19 +118,28 @@
       vec4 tc=uTouchClouds[j];
       vec2 tm=uTouchCloudMeta[j];
       float r=max(1.0,tc.w);
-      float radial=1.0-smoothstep(r*0.30,r,distance(pp,tc.xyz));
-      float fieldShape=0.58+body*0.28+detail*0.14;
-      float asym=0.88+0.12*sin(dot(pp-tc.xyz,vec3(0.071,0.053,0.061))+tm.y*6.2831);
-      touchField=max(touchField,radial*fieldShape*asym*tm.x);
+      float radial=1.0-smoothstep(r*0.18,r,distance(pp,tc.xyz));
+
+      // Irregular volumetric shaping: the touch volume inherits the same cloud noise,
+      // with extra breakup so it cannot read as a clean sphere.
+      float localNoise=noise3((pp-tc.xyz)*0.055+vec3(tm.y*8.0,3.7,-2.4));
+      float cloudShape=smoothstep(0.24,0.78,0.46+body*0.30+detail*0.18+localNoise*0.22);
+      float asym=0.84+0.16*sin(dot(pp-tc.xyz,vec3(0.071,0.053,0.061))+tm.y*6.2831);
+      touchField=max(touchField,radial*cloudShape*asym*tm.x);
     }
 
     float threshold=0.534+openness*0.12-fog*0.11;
-    threshold -= touchField*0.34;
+    threshold -= touchField*0.56;
     threshold -= (uAudioSlow.x-0.5)*0.055*uIntensity;
     threshold -= (uAudioSlow.y-0.5)*0.015*uIntensity;
     threshold -= activity*0.006;
     float d=smoothstep(threshold,threshold+0.145,field);
     d=pow(d,1.14);
+
+    // Ensure a held touch is actually perceptible even in an otherwise open patch,
+    // while retaining noisy/volumetric edges rather than a flat stamped blob.
+    float touchBody=smoothstep(0.035,0.62,touchField);
+    d=max(d,touchBody*(0.50+0.34*body+0.16*detail));
     d *= 0.92 + uAudioSlow.w*0.15 + activity*0.035;
     float altitude=0.88+0.12*sin(p.y*0.008+uSeed.x);
     return clamp(d*altitude,0.0,1.0);
@@ -650,6 +660,7 @@
   let lastTouchSpawnMs = 0;
   let lastQuickTapMs = 0;
   let backgroundGuarded = false;
+  let touchEnabled = true;
 
   const v3norm = (x,y,z) => {
     const m=Math.hypot(x,y,z)||1;
@@ -688,8 +699,8 @@
     const p=worldPointFromTouch(clientX,clientY,64);
     const node={
       x:p[0], y:p[1], z:p[2],
-      radius: trail ? Math.max(5.0, 5.6+touchHoldSeconds*1.25) : 6.0,
-      strength: trail ? Math.min(0.58,0.15+touchHoldSeconds*0.055) : 0.055,
+      radius: trail ? Math.max(6.0, 6.8+touchHoldSeconds*1.55) : 6.8,
+      strength: trail ? Math.min(0.78,0.24+touchHoldSeconds*0.075) : 0.14,
       seed:Math.random(),
       gesture:touchGestureId,
       active
@@ -721,9 +732,9 @@
       const active=activeTouchNode();
       if(active){
         // No artificial short growth ceiling: a long hold keeps expanding the volume.
-        active.radius += dt*(4.1 + Math.min(5.0,touchHoldSeconds*0.18));
-        const targetStrength=Math.min(1.0,0.10+touchHoldSeconds*0.105);
-        active.strength=expSmooth(active.strength,targetStrength,1.15,dt);
+        active.radius += dt*(4.8 + Math.min(7.0,touchHoldSeconds*0.26));
+        const targetStrength=Math.min(1.0,0.18+touchHoldSeconds*0.15);
+        active.strength=expSmooth(active.strength,targetStrength,1.55,dt);
       }
       // Previously laid parts of this gesture continue to knit together slowly.
       for(const n of touchNodes){
@@ -912,9 +923,10 @@
   }
 
   function syncTransportState(){
-    const actuallyPlaying = !audio.paused && !audio.ended && audio.readyState >= 2;
+    const actuallyPlaying = !audio.paused && !audio.ended;
     playBtn.dataset.state = actuallyPlaying ? 'pause' : 'play';
     playBtn.setAttribute('aria-label', actuallyPlaying ? 'Pause' : 'Play');
+    playBtn.setAttribute('aria-pressed', actuallyPlaying ? 'true' : 'false');
     if(!actuallyPlaying){
       releaseScreenWakeLock();
       if(audio.currentTime>0 && !audio.ended) statusEl.textContent='Paused';
@@ -978,8 +990,25 @@
     if(audioCtx.state==='suspended') await audioCtx.resume();
   });
 
+  let transportBusy=false;
   playBtn.addEventListener('click', async () => {
-    if(audio.paused){ await startPlayback(); } else audio.pause();
+    if(transportBusy) return;
+    transportBusy=true;
+    try {
+      if(audio.paused || audio.ended){
+        // Optimistically switch the control while iOS prepares the media pipeline.
+        playBtn.dataset.state='pause';
+        playBtn.setAttribute('aria-label','Pause');
+        playBtn.setAttribute('aria-pressed','true');
+        await startPlayback();
+      } else {
+        audio.pause();
+        syncTransportState();
+      }
+    } finally {
+      // Give iOS one event loop turn to settle, then reconcile with actual media state.
+      setTimeout(()=>{ syncTransportState(); transportBusy=false; },80);
+    }
   });
   audio.addEventListener('play',()=>{
     if(backgroundGuarded){
@@ -993,6 +1022,11 @@
     if (!calibrated) statusEl.textContent='Calibrating';
     else statusEl.textContent=manualScene === null ? 'DRIFTING · AUTO' : `Scene locked · ${SCENES[manualScene]}`;
   });
+  audio.addEventListener('playing',()=>{
+    syncTransportState();
+    statusEl.textContent = !calibrated ? 'Calibrating' : (manualScene === null ? 'DRIFTING · AUTO' : `Scene locked · ${SCENES[manualScene]}`);
+  });
+  audio.addEventListener('canplay',syncTransportState);
   audio.addEventListener('pause',()=>{ syncTransportState(); statusEl.textContent=audio.currentTime>0?'Paused':'Ready'; });
   audio.addEventListener('ended',()=>{ syncTransportState(); statusEl.textContent='Finished'; calibrated=false; });
   audio.addEventListener('emptied',syncTransportState);
@@ -1032,6 +1066,13 @@
     }
   });
 
+  touchToggle.addEventListener('change',()=>{
+    touchEnabled=touchToggle.checked;
+    if(!touchEnabled) finishTouchCloud();
+    statusEl.textContent=touchEnabled ? 'Touch Clouds · ON' : 'Touch Clouds · OFF';
+    scheduleUiHide();
+  });
+
   let hideTimer=null;
   function scheduleUiHide(){
     clearTimeout(hideTimer);
@@ -1054,49 +1095,65 @@
       if(e.target===canvas || e.target.id==='vignette') showUI();
     },{passive:true});
   } else {
-    canvas.addEventListener('contextmenu',e=>e.preventDefault());
-    canvas.addEventListener('selectstart',e=>e.preventDefault());
-    canvas.addEventListener('dragstart',e=>e.preventDefault());
+    const isVisualTouchTarget = (e) => {
+      // Canvas when controls are hidden, or empty UI backdrop when controls are visible.
+      // Never steal touches from the actual settings panel/buttons.
+      return e.target===canvas || e.target===ui || e.target.id==='vignette';
+    };
 
-    canvas.addEventListener('pointerdown',e=>{
-      if(e.pointerType==='mouse') return;
+    const preventIOSGesture = e => {
+      if(isVisualTouchTarget(e)) e.preventDefault();
+    };
+    document.addEventListener('contextmenu',preventIOSGesture,{passive:false});
+    document.addEventListener('selectstart',preventIOSGesture,{passive:false});
+    document.addEventListener('dragstart',preventIOSGesture,{passive:false});
+
+    const onTouchStart = e => {
+      if(e.pointerType==='mouse' || !isVisualTouchTarget(e)) return;
       e.preventDefault();
       touchPointerId=e.pointerId;
-      try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+      try { e.target.setPointerCapture && e.target.setPointerCapture(e.pointerId); } catch(err) {}
       const startX=e.clientX, startY=e.clientY;
       lastTouchPoint={x:startX,y:startY};
       clearTimeout(touchPendingTimer);
-      touchPendingTimer=setTimeout(()=>{
-        if(touchPointerId===e.pointerId && !touchCloudActive){
-          beginTouchCloud(startX,startY);
-        }
-      },280);
-    },{passive:false});
 
-    canvas.addEventListener('pointermove',e=>{
+      // Hold creates cloud only when enabled; quick double-tap remains available either way.
+      if(touchEnabled){
+        touchPendingTimer=setTimeout(()=>{
+          if(touchPointerId===e.pointerId && !touchCloudActive && touchEnabled){
+            beginTouchCloud(startX,startY);
+          }
+        },160);
+      }
+    };
+
+    const onTouchMove = e => {
       if(e.pointerId!==touchPointerId) return;
       e.preventDefault();
-      if(!touchCloudActive) return;
+      if(!touchCloudActive || !touchEnabled) return;
+
       const now=performance.now();
       const active=activeTouchNode();
       if(active){
         const p=worldPointFromTouch(e.clientX,e.clientY,64);
-        // Follow the finger smoothly instead of leaving a row of discrete stamps.
-        active.x=expSmooth(active.x,p[0],7.5,1/60);
-        active.y=expSmooth(active.y,p[1],7.5,1/60);
-        active.z=expSmooth(active.z,p[2],7.5,1/60);
+        // Smoothly pull the live volume with the finger.
+        const k=0.34;
+        active.x += (p[0]-active.x)*k;
+        active.y += (p[1]-active.y)*k;
+        active.z += (p[2]-active.z)*k;
       }
+
       const lp=lastTouchPoint || {x:e.clientX,y:e.clientY};
       const moved=Math.hypot(e.clientX-lp.x,e.clientY-lp.y);
-      if(moved>24 && now-lastTouchSpawnMs>105){
+      if(moved>18 && now-lastTouchSpawnMs>85){
         if(active) active.active=false;
         addTouchNode(e.clientX,e.clientY,{active:true,trail:true});
         lastTouchPoint={x:e.clientX,y:e.clientY};
         lastTouchSpawnMs=now;
       }
-    },{passive:false});
+    };
 
-    const endTouch=e=>{
+    const onTouchEnd = e => {
       if(e.pointerId!==touchPointerId) return;
       e.preventDefault();
       clearTimeout(touchPendingTimer);
@@ -1105,7 +1162,6 @@
       if(touchCloudActive){
         finishTouchCloud();
       } else {
-        // A short tap is reserved for UI discovery. Two quick taps toggle controls.
         const now=performance.now();
         if(now-lastQuickTapMs<360){
           if(ui.classList.contains('visible')) hideUI(); else showUI();
@@ -1115,11 +1171,15 @@
         }
         touchPointerId=null;
       }
-      try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
+      try { e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId); } catch(err) {}
     };
 
-    canvas.addEventListener('pointerup',endTouch,{passive:false});
-    canvas.addEventListener('pointercancel',endTouch,{passive:false});
+    // Bind at document level so iOS cannot silently route the gesture around the canvas
+    // when the transparent full-screen UI shell is present.
+    document.addEventListener('pointerdown',onTouchStart,{passive:false});
+    document.addEventListener('pointermove',onTouchMove,{passive:false});
+    document.addEventListener('pointerup',onTouchEnd,{passive:false});
+    document.addEventListener('pointercancel',onTouchEnd,{passive:false});
   }
 
   ui.addEventListener('pointerdown',e=>{
