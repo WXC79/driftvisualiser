@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#05070b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="DRIFT" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <meta name="description" content="DRIFT 12.11.8 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
+  <title>DRIFT 12.11.8 — Generative Music Visualiser</title>
+  <link rel="stylesheet" href="style.css?v=12.11.8" />
+</head>
+<body>
+  <canvas id="gl"></canvas>
+  <div id="vignette"></div>
+
+  <main id="ui" class="ui visible">
+    <section class="panel" id="landing">
+      <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
+      <div class="brand">DRIFT 12.11.8</div>
+      <h1>GENERATIVE CLOUD VISUALISER</h1>
+      <p class="lede">Choose music from your device. The file stays local: nothing is uploaded.</p>
+
+      <label class="fileButton" for="fileInput" title="Choose a music file from your device">CHOOSE MUSIC</label>
+      <input id="fileInput" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg" />
+      <p id="fileName" class="filename">No track loaded</p>
+
+      <div class="transport">
+        <button id="playBtn" class="iconButton" disabled aria-label="Play" title="Play or pause the selected music">▶</button>
+        <button id="loopBtn" class="iconButton" aria-label="Loop" aria-pressed="false" title="Loop the current track">↻</button>
+        <button id="shuffleBtn" class="iconButton" aria-label="Regenerate journey" title="Regenerate the visual journey with a new random seed">⤨</button>
+        <button id="fullBtn" class="iconButton" aria-label="Fullscreen" title="Enter or exit fullscreen">⛶</button>
+      </div>
+
+      <div class="timelineRow">
+        <span id="timeNow">0:00</span>
+        <input id="seek" title="Seek through the current track" type="range" min="0" max="1" value="0" step="0.01" disabled />
+        <span id="timeTotal">0:00</span>
+      </div>
+
+      <details class="settings">
+        <summary>VISUAL SETTINGS</summary>
+        <label class="sceneModeRow"><span>Scene mode</span>
+          <select id="sceneMode" title="Auto follows the music and moves between scenes; choose a scene to lock the visual style">
+            <option value="auto" selected>AUTO</option>
+            <option value="0">SUNRISE</option>
+            <option value="1">BLUE SKY</option>
+            <option value="2">SUNLIGHT</option>
+            <option value="3">MIST</option>
+            <option value="4">DARK CLOUD</option>
+            <option value="5">THUNDERSTORM</option>
+            <option value="6">SUNSET</option>
+            <option value="7">NIGHT</option>
+          </select>
+        </label>
+        <label><span>Visual intensity</span><input id="intensity" title="Adjust the strength of cloud motion and music response without changing the scene palette" type="range" min="0.5" max="1.35" value="1.08" step="0.01" /></label>
+        <label><span>Forward motion</span><input id="speed" title="Adjust forward drift speed" type="range" min="0.65" max="1.55" value="1" step="0.01" /></label>
+        <label><span>Grain</span><input id="grain" title="Adjust fine film-grain texture" type="range" min="0" max="2" value="1" step="0.01" /></label>
+      </details>
+
+      <div class="statusLine">
+        <span id="status">Waiting for music</span>
+        <span id="scene">BLUE SKY</span>
+      </div>
+      <p class="hint">Shows a still preview before playback. On phones, double-tap the visual background to reopen the controls after hiding them. This build improves landscape menu fitting and makes Sunrise feel more distinct from Blue Sky.</p>
+    </section>
+  </main>
+
+  <audio id="audio" preload="metadata"></audio>
+  <script src="app.js?v=12.11.8"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));
+    }
+  </script>
+</body>
+</html>
