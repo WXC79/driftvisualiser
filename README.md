@@ -1,7 +1,14 @@
-# DRIFT 12.12.1 — repaired build
+# DRIFT 12.12.2 — repair build
 
-This build was rebuilt from the last known-working 12.11 renderer rather than patching the broken 12.12 build.
+This build is specifically aimed at the “nothing is generating” regression.
 
-It keeps the 12.11 rendering path, adds the requested darker/heavier rain scenes, richer sunrise/sunset cloud tinting, slightly slower cloud evolution, and multi-track sequence/shuffle playback.
+Changes:
+- Restores the known-good DRIFT 12.11 cloud-generation/motion speed.
+- Keeps the 12.12 scene colour refinements.
+- Keeps multi-track selection, sequence playback and shuffle.
+- Defers Web Audio graph creation until Play for better mobile/iPhone reliability.
+- Fixes playlist auto-advance.
+- Version-busts app.js/style.css and bumps the service-worker cache.
+- Shows an on-screen error message if a JavaScript runtime error occurs.
 
-Replace the whole GitHub Pages package so the service worker, HTML and JavaScript remain on the same version.
+Upload the full package to the GitHub Pages repo root and commit.

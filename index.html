@@ -10,9 +10,9 @@
   <meta name="apple-mobile-web-app-title" content="DRIFT" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <meta name="description" content="DRIFT 12.12.1 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
-  <title>DRIFT 12.12.1 — Generative Music Visualiser</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="description" content="DRIFT 12.12.2 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
+  <title>DRIFT 12.12.2 — Generative Music Visualiser</title>
+  <link rel="stylesheet" href="style.css?v=12.12.2" />
 </head>
 <body>
   <canvas id="gl"></canvas>
@@ -21,7 +21,7 @@
   <main id="ui" class="ui visible">
     <section class="panel" id="landing">
       <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
-      <div class="brand">DRIFT 12.12.1</div>
+      <div class="brand">DRIFT 12.12.2</div>
       <h1>GENERATIVE CLOUD VISUALISER</h1>
       <p class="lede">Choose one track or several from your device. Files stay local: nothing is uploaded.</p>
 
@@ -70,12 +70,12 @@
         <span id="status">Waiting for music</span>
         <span id="scene">BLUE SKY</span>
       </div>
-      <p class="hint">Shows a still preview before playback. AUTO now uses slower cloud evolution and much longer scene crossfades. For the cleanest phone experience, add DRIFT to your Home Screen and open it as a web app. This build restores the 12.11 rendering baseline, adds multi-track playback, deepens rain scenes, enriches sunrise/sunset cloud colour, and slows cloud evolution slightly.</p>
+      <p class="hint">Shows a still preview before playback. AUTO now uses slower cloud evolution and much longer scene crossfades. For the cleanest phone experience, add DRIFT to your Home Screen and open it as a web app. This repair build restores the known-good 12.11 cloud-generation speed while keeping the scene refinements and multi-track playback.</p>
     </section>
   </main>
 
   <audio id="audio" preload="metadata"></audio>
-  <script src="app.js"></script>
+  <script src="app.js?v=12.12.2"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));

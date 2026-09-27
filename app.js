@@ -1,5 +1,6 @@
 (() => {
   'use strict';
+  const DRIFT_BUILD = '12.12.2';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -24,6 +25,10 @@
   const grainSlider = document.getElementById('grain');
   const sceneMode = document.getElementById('sceneMode');
   const closeUiBtn = document.getElementById('closeUiBtn');
+  window.addEventListener('error', e => {
+    if (statusEl) statusEl.textContent = 'Visual error — reload this build';
+    console.error('DRIFT runtime error:', e.error || e.message);
+  });
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   if (isStandalone) {
     fullBtn.title = 'Running as a Home Screen web app';
@@ -96,10 +101,10 @@
   }
 
   float cloudDensity(vec3 p,float fog,float openness,float motion,float pulse,float activity){
-    vec3 advect=vec3(uTime*(0.000094+motion*0.000054+activity*0.000039),uTime*0.000034,-uTime*(0.000068+motion*0.000047));
+    vec3 advect=vec3(uTime*(0.000108+motion*0.000062+activity*0.000045),uTime*0.000039,-uTime*(0.000078+motion*0.000054));
     vec3 pp=p+advect;
-    pp.y += sin(pp.x*0.010+uTime*0.235)*0.5*activity;
-    pp.z += sin(pp.y*0.013-uTime*0.205)*0.7*(pulse*0.55+activity*0.18);
+    pp.y += sin(pp.x*0.010+uTime*0.27)*0.5*activity;
+    pp.z += sin(pp.y*0.013-uTime*0.24)*0.7*(pulse*0.55+activity*0.18);
     float large=noise3(pp*0.0102+vec3(uSeed.x*0.071,uSeed.y*0.053,2.1));
     float body=noise3(pp*0.0185+vec3(6.0+uSeed.x*0.02,-2.0,11.0+uSeed.y*0.03));
     float detail=noise3(pp*0.0375+vec3(13.0+uSeed.y*0.03,-7.0,5.0+uSeed.x*0.02));
@@ -186,7 +191,7 @@
     for(int i=0;i<STEPS;i++){
       float dist=(float(i)+0.38)*stepLength;
       vec3 p=ro+rd*dist;
-      vec3 movingP=p+vec3(uTime*0.00168*motion,uTime*0.00047,-uTime*0.00120*motion);
+      vec3 movingP=p+vec3(uTime*0.00195*motion,uTime*0.00055,-uTime*0.00140*motion);
       float dens=cloudDensity(movingP,fog,openness,motion,pulse,activity);
       float farPresence=0.82+smoothstep(76.0,142.0,dist)*0.17;
       float nearSeparation=0.90+smoothstep(18.0,62.0,dist)*0.10;
@@ -532,9 +537,9 @@
     if(autoplay) startPlayback();
   }
 
-  function stepTrack(direction){
+  function stepTrack(direction, forceAutoplay=null){
     if(playlist.length<2) return;
-    const autoplay=!audio.paused;
+    const autoplay = forceAutoplay === null ? !audio.paused : forceAutoplay;
     if(playlistShuffle){
       if(!shuffledOrder.length) rebuildShuffleOrder();
       shuffledPosition=(shuffledPosition+direction+shuffledOrder.length)%shuffledOrder.length;
@@ -704,8 +709,6 @@
     shuffledPosition=0;
     playBtn.disabled=false;
     seek.disabled=false;
-    ensureAudioGraph();
-    if(audioCtx.state==='suspended') await audioCtx.resume();
     loadTrack(0,false,true);
     statusEl.textContent=files.length>1 ? `Playlist loaded · ${files.length} tracks` : 'Loaded — press play';
   });
@@ -715,7 +718,7 @@
   });
   audio.addEventListener('play',()=>{ playBtn.textContent='Ⅱ'; if (!calibrated) statusEl.textContent='Calibrating'; else statusEl.textContent=manualScene === null ? 'DRIFTING · AUTO' : `Scene locked · ${SCENES[manualScene]}`; });
   audio.addEventListener('pause',()=>{ playBtn.textContent='▶'; statusEl.textContent=audio.currentTime>0?'Paused':'Ready'; });
-  audio.addEventListener('ended',()=>{ playBtn.textContent='▶'; calibrated=false; if(playlist.length>1 && !audio.loop){ stepTrack(1); } else { statusEl.textContent='Finished'; } });
+  audio.addEventListener('ended',()=>{ playBtn.textContent='▶'; calibrated=false; if(playlist.length>1 && !audio.loop){ stepTrack(1,true); } else { statusEl.textContent='Finished'; } });
   if(prevTrackBtn) prevTrackBtn.addEventListener('click',()=>stepTrack(-1));
   if(nextTrackBtn) nextTrackBtn.addEventListener('click',()=>stepTrack(1));
   if(playlistShuffleBtn) playlistShuffleBtn.addEventListener('click',()=>{ playlistShuffle=!playlistShuffle; if(playlistShuffle) rebuildShuffleOrder(); updatePlaylistUI(); });
