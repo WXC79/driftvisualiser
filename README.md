@@ -1,12 +1,17 @@
-# DRIFT 12.11.8 — menu / sunrise refinement
+# DRIFT 12.11.9 — Scene Balance
 
-Based on 12.11.7.
+Built directly from the untouched 12.11.8 baseline. No touch-cloud code is included.
 
-Changes:
-- Visual menu shrinks more cleanly to fit landscape orientation on phones.
-- On touch devices, hidden controls now reopen with a double-tap on the background instead of a single tap.
-- Background tap outside the panel still closes the menu.
-- This avoids clashing with the forthcoming touch-cloud interaction.
-- Sunrise now has stronger local sun-haze and occasional brighter edge-lighting so it feels more distinct from Blue Sky.
+Scene changes:
+- SUNLIGHT:
+  - own slightly lighter blue sky
+  - warm yellow atmospheric haze
+  - stronger yellow cloud edge/rim lighting
+  - stronger sunlit cloud bounce so it reads distinctly from Blue Sky
+- NIGHT:
+  - brighter dark-blue/inky background so the scene remains visible in a bright room
+  - brighter cloud bodies without turning them white
+  - stronger moonlit edges, bounce and atmospheric haze
+  - subtle right-side density compensation in landscape to reduce the left-heavy appearance
 
-Visual scene pacing and operational fixes from 12.11.7 remain intact.
+All benchmark movement/pacing remains unchanged from 12.11.8.

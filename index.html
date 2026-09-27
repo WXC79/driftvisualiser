@@ -10,9 +10,9 @@
   <meta name="apple-mobile-web-app-title" content="DRIFT" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <meta name="description" content="DRIFT 12.11.8 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
-  <title>DRIFT 12.11.8 — Generative Music Visualiser</title>
-  <link rel="stylesheet" href="style.css?v=12.11.8" />
+  <meta name="description" content="DRIFT 12.11.9 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
+  <title>DRIFT 12.11.9 — Generative Music Visualiser</title>
+  <link rel="stylesheet" href="style.css?v=12.11.9" />
 </head>
 <body>
   <canvas id="gl"></canvas>
@@ -21,7 +21,7 @@
   <main id="ui" class="ui visible">
     <section class="panel" id="landing">
       <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
-      <div class="brand">DRIFT 12.11.8</div>
+      <div class="brand">DRIFT 12.11.9</div>
       <h1>GENERATIVE CLOUD VISUALISER</h1>
       <p class="lede">Choose music from your device. The file stays local: nothing is uploaded.</p>
 
@@ -66,12 +66,12 @@
         <span id="status">Waiting for music</span>
         <span id="scene">BLUE SKY</span>
       </div>
-      <p class="hint">Shows a still preview before playback. On phones, double-tap the visual background to reopen the controls after hiding them. This build improves landscape menu fitting and makes Sunrise feel more distinct from Blue Sky.</p>
+      <p class="hint">Scene-balance build: Sunlight is brighter and warmer with yellow haze/edge light; Night is more visible with stronger moonlit cloud definition and better left/right balance. Touch controls are not included in this build.</p>
     </section>
   </main>
 
   <audio id="audio" preload="metadata"></audio>
-  <script src="app.js?v=12.11.8"></script>
+  <script src="app.js?v=12.11.9"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));
