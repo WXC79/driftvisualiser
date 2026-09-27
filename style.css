@@ -263,3 +263,14 @@ html, body, #gl, #vignette, .ui, .panel, button, label {
 }
 
 
+
+
+/* 13.3 — showcase track label */
+.showcaseNote {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: .72em;
+  opacity: .52;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}

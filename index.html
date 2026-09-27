@@ -10,8 +10,8 @@
   <meta name="apple-mobile-web-app-title" content="DRIFT" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
-  <meta name="description" content="DRIFT 13.2 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
-  <title>DRIFT 13.2 — Generative Music Visualiser</title>
+  <meta name="description" content="DRIFT 13.5 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
+  <title>DRIFT 13.5 — Generative Music Visualiser</title>
   <script>
     (function(){
       function standalone(){
@@ -41,7 +41,7 @@
       });
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=13.2" />
+  <link rel="stylesheet" href="style.css?v=13.5" />
 </head>
 <body>
   <canvas id="gl"></canvas>
@@ -50,16 +50,16 @@
   <main id="ui" class="ui visible">
     <section class="panel" id="landing">
       <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
-      <div class="brand">DRIFT 13.2</div>
+      <div class="brand">DRIFT 13.5</div>
       <h1>GENERATIVE CLOUD VISUALISER</h1>
-      <p class="lede">Choose music from your device. The file stays local: nothing is uploaded.</p>
+      <p class="lede">Play the showcase track, or choose music from your device. Your own files stay local: nothing is uploaded.</p>
 
       <label class="fileButton" for="fileInput" title="Choose a music file from your device">CHOOSE MUSIC</label>
       <input id="fileInput" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg" />
-      <p id="fileName" class="filename">No track loaded</p>
+      <p id="fileName" class="filename">The Cloud — Chris Weeks<br><span class="showcaseNote">Default showcase track</span></p>
 
       <div class="transport">
-        <button id="playBtn" class="iconButton cloudTransport" disabled aria-label="Play" title="Play or pause the selected music" data-state="play">
+        <button id="playBtn" class="iconButton cloudTransport" aria-label="Play" title="Play or pause the selected music" data-state="play">
           <svg class="cloudTransportSvg" viewBox="0 0 96 64" aria-hidden="true">
             <path class="cloudShape" d="M22 52h50c10 0 18-7 18-16 0-8-7-15-16-16C71 10 62 4 52 4 40 4 30 12 27 23c-2-1-5-2-8-2C10 21 4 28 4 36s7 16 18 16z"/>
             <path class="playGlyph" d="M42 22 62 32 42 42z"/>
@@ -76,7 +76,7 @@
 
       <div class="timelineRow">
         <span id="timeNow">0:00</span>
-        <input id="seek" title="Seek through the current track" type="range" min="0" max="1" value="0" step="0.01" disabled />
+        <input id="seek" title="Seek through the current track" type="range" min="0" max="1" value="0" step="0.01" />
         <span id="timeTotal">0:00</span>
       </div>
 
@@ -108,8 +108,8 @@
     </section>
   </main>
 
-  <audio id="audio" preload="metadata"></audio>
-  <script src="app.js?v=13.2"></script>
+  <audio id="audio" preload="metadata" src="./the-cloud-chris-weeks.m4a"></audio>
+  <script src="app.js?v=13.5"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));

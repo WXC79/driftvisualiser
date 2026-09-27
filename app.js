@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '13.2';
+  const DRIFT_BUILD = '13.5';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -386,6 +386,9 @@
   let seed = [Math.random()*100, Math.random()*100];
   const transitionFrom = new Float32Array(8);
 
+  const SHOWCASE_SRC = './the-cloud-chris-weeks.m4a';
+  const SHOWCASE_LABEL = 'The Cloud — Chris Weeks';
+  let usingShowcaseTrack = true;
   let objectURL = null;
   let audioCtx = null;
   let sourceNode = null;
@@ -805,20 +808,25 @@
     } catch(e) { console.warn(e); }
   }
 
-  fileInput.addEventListener('change', async e => {
+  fileInput.addEventListener('change', e => {
     const f=e.target.files && e.target.files[0]; if(!f) return;
     if(objectURL) URL.revokeObjectURL(objectURL);
     objectURL=URL.createObjectURL(f);
+    usingShowcaseTrack=false;
+    audio.pause();
+    audio.muted=false;
     audio.src=objectURL;
-    hasStarted = false;
-    frozenTime = 0;
-    previewInitialized = false;
+    audio.load();
+    hasStarted=false;
+    frozenTime=0;
+    previewInitialized=false;
     fileName.textContent=f.name;
     playBtn.disabled=false;
     seek.disabled=false;
+    timeNow.textContent='0:00';
+    timeTotal.textContent='0:00';
     resetJourney();
-    ensureAudioGraph();
-    if(audioCtx.state==='suspended') await audioCtx.resume();
+    syncTransportState();
   });
 
   let transportBusy=false;
@@ -841,6 +849,20 @@
       setTimeout(()=>{ syncTransportState(); transportBusy=false; },80);
     }
   });
+  audio.addEventListener('loadedmetadata',()=>{
+    if(isFinite(audio.duration) && audio.duration>0){
+      seek.max=audio.duration;
+      seek.value=0;
+      timeNow.textContent='0:00';
+      timeTotal.textContent=formatTime(audio.duration);
+    }
+    playBtn.disabled=false;
+    seek.disabled=false;
+    if(usingShowcaseTrack && audio.currentTime===0){
+      statusEl.textContent='Showcase ready — press play';
+    }
+  });
+
   audio.addEventListener('play',()=>{
     if(backgroundGuarded){
       audio.muted=true;
@@ -951,7 +973,15 @@
   });
   ui.addEventListener('input',scheduleUiHide,{passive:true});
   audio.addEventListener('play',showUI);
+
+  // Bundled showcase track: always present on a fresh opening, never autoplayed.
+  // Choosing a local file replaces it for the current session.
+  usingShowcaseTrack=true;
+  fileName.innerHTML='The Cloud — Chris Weeks<br><span class="showcaseNote">Default showcase track</span>';
+  playBtn.disabled=false;
+  seek.disabled=false;
+  if(!audio.getAttribute('src')) audio.src=SHOWCASE_SRC;
   resetJourney();
-  statusEl.textContent='Waiting for music';
+  statusEl.textContent='Showcase ready — press play';
   showUI();
 })();

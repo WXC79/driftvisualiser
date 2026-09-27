@@ -1,24 +1,13 @@
-# DRIFT 13.2 — No-Touch Stable Build
+# DRIFT 13.5 — Higher-Quality Showcase Track
 
-Built from 13.1, with the touch-cloud system removed completely.
+Built from the stable no-touch 13.3 showcase build.
 
-Preserved:
-- flattened / improved Night scene from 13.0
-- portrait fullscreen workaround
-- current DRIFT icon / logo assets
-- boutique cloud Play/Pause control
-- sustained-rhythm audio response
-- improved Play/Pause state synchronization
-- background audio guard that prevents the brief audio burst when returning to the app
-- iOS long-press / text-selection suppression
-- double-tap visual to show/hide controls
-- established camera speed, renderer quality, and scene timing
+Showcase audio:
+- The Cloud — Chris Weeks
+- AAC-LC / M4A at 160 kbps
+- materially higher quality than the 96 kbps MP3 test
+- still keeps the complete GitHub upload below 25 MB
+- no autoplay
+- user-selected audio immediately replaces the showcase for the session
 
-Removed:
-- touch-cloud shader uniforms
-- touch-cloud world state
-- touch-cloud growth / drag logic
-- touch-cloud menu toggle
-- all per-frame touch-cloud calculations
-
-This is the performance-focused version 13 baseline.
+All DRIFT visual, fullscreen, transport, Night, and background-audio fixes are preserved.
