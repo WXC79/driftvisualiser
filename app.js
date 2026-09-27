@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '12.11.5';
+  const DRIFT_BUILD = '12.11.6';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -125,8 +125,8 @@
     float bass=uAudio0.x, mids=uAudio0.y, highs=uAudio0.z, energy=uAudio0.w;
     float brightness=uAudio1.x, flux=uAudio1.y, pulse=uAudio1.z, activity=uAudio1.w;
 
-    float fogBase=sunrise*0.22+blue*0.15+sunlight*0.15+mist*0.58+darkP*0.70+storm*0.94+sunset*0.24+night*0.62;
-    float openBase=sunrise*0.80+blue*0.93+sunlight*0.90+mist*0.24+darkP*0.08+storm*0.03+sunset*0.79+night*0.16;
+    float fogBase=sunrise*0.22+blue*0.15+sunlight*0.15+mist*0.58+darkP*0.76+storm*0.94+sunset*0.24+night*0.62;
+    float openBase=sunrise*0.80+blue*0.93+sunlight*0.90+mist*0.24+darkP*0.05+storm*0.03+sunset*0.79+night*0.16;
     float grainBase=sunrise*0.030+blue*0.022+sunlight*0.030+mist*0.29+darkP*0.085+storm*0.160+sunset*0.042+night*0.108;
     float ambient=sunrise*0.73+blue*0.76+sunlight*0.76+mist*0.45+darkP*0.22+storm*0.085+sunset*0.70+night*0.045;
 
@@ -148,7 +148,7 @@
     vec3 mistSky=mix(vec3(0.50,0.56,0.62),vec3(0.25,0.32,0.39),mistY);
     vec3 sunriseSky=mix(vec3(1.00,0.60,0.30),vec3(0.46,0.39,0.54),skyY);
     vec3 sunsetSky=mix(vec3(0.92,0.44,0.30),vec3(0.30,0.25,0.40),skyY);
-    vec3 darkSky=mix(vec3(0.28,0.30,0.32),vec3(0.095,0.105,0.112),skyY);
+    vec3 darkSky=mix(vec3(0.56,0.57,0.58),vec3(0.22,0.23,0.24),skyY);
     vec3 stormSky=mix(vec3(0.105,0.108,0.112),vec3(0.060,0.064,0.070),skyY);
     vec3 nightSky=mix(vec3(0.012,0.015,0.024),vec3(0.0008,0.0012,0.0035),skyY);
 
@@ -205,12 +205,12 @@
       vec3 dayLight=vec3(0.90,0.92,0.94);
       dayShadow=mix(dayShadow,vec3(0.36,0.22,0.27),sunrise*0.68);
       dayLight=mix(dayLight,vec3(1.00,0.71,0.46),sunrise*0.94);
-      dayShadow=mix(dayShadow,vec3(0.22,0.20,0.17),sunlight*0.22);
-      dayLight=mix(dayLight,vec3(0.90,0.70,0.34),sunlight*0.64);
+      dayShadow=mix(dayShadow,vec3(0.20,0.19,0.17),sunlight*0.16);
+      dayLight=mix(dayLight,vec3(0.96,0.84,0.60),sunlight*0.44);
       dayShadow=mix(dayShadow,vec3(0.38,0.22,0.24),sunset*0.74);
       dayLight=mix(dayLight,vec3(0.90,0.56,0.52),sunset*0.90);
-      dayShadow=mix(dayShadow,vec3(0.11,0.115,0.122),darkP);
-      dayLight=mix(dayLight,vec3(0.40,0.41,0.43),darkP*0.98);
+      dayShadow=mix(dayShadow,vec3(0.085,0.090,0.095),darkP);
+      dayLight=mix(dayLight,vec3(0.36,0.37,0.39),darkP*0.98);
       dayShadow=mix(dayShadow,vec3(0.070,0.073,0.078),storm);
       dayLight=mix(dayLight,vec3(0.155,0.160,0.168),storm);
 
@@ -226,8 +226,11 @@
       float greyVar = noise3(movingP*0.020 + vec3(9.0, 3.0, 6.0));
       vec3 rainGrey = mix(vec3(0.17,0.18,0.19), vec3(0.53,0.53,0.54), greyVar);
       cloud = mix(cloud, rainGrey, (darkP*0.34 + storm*0.16) * (0.44 + 0.56*dens));
-      vec3 moodTint = sunriseSky*(sunrise*0.42) + sunsetSky*(sunset*0.50) + darkSky*(darkP*0.34) + stormSky*(storm*0.30) + nightSky*(night*0.42);
-      float tintAmt = clamp(sunrise*0.20 + sunset*0.32 + darkP*0.23 + storm*0.14 + night*0.24, 0.0, 0.42);
+      float darkPocket = noise3(movingP*0.015 + vec3(17.0, 1.0, 4.0));
+      vec3 darkPocketGrey = mix(vec3(0.10,0.11,0.12), vec3(0.26,0.27,0.28), darkPocket);
+      cloud = mix(cloud, darkPocketGrey, darkP * (0.10 + 0.32*darkPocket) * (0.40 + 0.60*dens));
+      vec3 moodTint = sunriseSky*(sunrise*0.42) + sunsetSky*(sunset*0.50) + darkSky*(darkP*0.44) + stormSky*(storm*0.30) + nightSky*(night*0.42);
+      float tintAmt = clamp(sunrise*0.20 + sunset*0.32 + darkP*0.29 + storm*0.14 + night*0.24, 0.0, 0.44);
       cloud = mix(cloud, mix(cloud, moodTint, 0.64), tintAmt * (0.60 + 0.40*dens));
       vec3 atmosphericCloud=mix(cloud,vec3(0.50,0.53,0.57),distanceDepth*0.07*(1.0-storm*0.94)*(1.0-night));
       cloud=mix(cloud,atmosphericCloud,distanceDepth*(0.42-darkP*0.14-storm*0.22-night*0.12));
@@ -243,11 +246,13 @@
       cloud+=vec3(1.00,0.66,0.16)*lightning*localFlash*dens*(0.32+edge*1.20+(1.0-interior)*0.24);
 
       float sunFacing=sunDot*sunDot;
+      float sunCycle=pow(max(0.0,sin(uTime*0.035+uSeed.x*1.41+uSeed.y*0.53)),6.0);
       float sunEdge=edge*(0.10+sunFacing*0.72)*sunPresence;
       float sunInteriorGlow=(1.0-interior)*pow(sunDot,4.0)*sunPresence*(0.013 + sunrise*0.008 + sunset*0.003);
-      float sunlightBounce=sunlight*(0.24+sunFacing*0.62)*(1.0-interior)*(0.52+edge*1.85) + sunrise*(0.10+sunFacing*0.16)*(1.0-interior)*(0.38+edge*1.52);
+      float sunlightBounce=sunlight*(0.20+sunFacing*0.56)*(1.0-interior)*(0.42+edge*1.55) + sunrise*(0.10+sunFacing*0.16)*(1.0-interior)*(0.38+edge*1.52);
+      float sunlightRim=edge*sunFacing*sunlight*(0.06+0.20*sunCycle)*(0.75+0.25*(1.0-interior));
       float musicSun=0.92+brightness*0.24+uAudioSlow.z*0.15+pulse*0.018;
-      cloud+=sunColor*(sunEdge*(0.34+sunlight*0.32+sunrise*0.16)+sunInteriorGlow+sunlightBounce*0.18)*musicSun*(1.0 - sunset*0.08 - night*0.50);
+      cloud+=sunColor*(sunEdge*(0.22+sunlight*0.20+sunrise*0.16)+sunInteriorGlow+sunlightBounce*0.13+sunlightRim)*musicSun*(1.0 - sunset*0.08 - night*0.50);
 
       vec3 sunriseEdgeTint = vec3(1.00,0.62,0.34);
       vec3 sunsetEdgeTint = vec3(0.98,0.60,0.72);
@@ -268,7 +273,10 @@
     }
 
     vec3 base=accum+sky*trans;
+    float sunCycle=pow(max(0.0,sin(uTime*0.035+uSeed.x*1.41+uSeed.y*0.53)),6.0);
+    float sunlightHaze=pow(sunDot,2.3)*sunlight*(0.012+sunCycle*0.040);
     float moonHaze=pow(moonDot,2.6)*night*(0.012+moonCycle*0.050);
+    base+=sunColor*(sunlightHaze*(0.30+0.70*trans));
     base+=moonColor*(pow(moonDot,4.0)*moonPresence*0.018 + moonHaze*(0.35+0.65*trans));
 
     vec2 grainUV1=vec2(uv.x*431.7+uv.y*163.1, uv.x*-247.3+uv.y*389.4);
@@ -283,6 +291,7 @@
     base+=dotNoise*grainEnvelope*0.010;
 
     base=mix(base,vec3(0.61,0.64,0.66),mist*cloudImmersion*0.070);
+    base=mix(base,vec3(0.43,0.44,0.45),darkP*(1.0-cloudImmersion)*0.018);
     base=mix(base,vec3(0.20,0.21,0.22),storm*(1.0-cloudImmersion)*0.020);
     base=mix(base, vec3(0.13,0.14,0.17), night*cloudImmersion*0.040);
     float skyDither=(noise2(uv*vec2(503.0,337.0)+vec2(uTime*0.07,-uTime*0.05)+uSeed*2.3)-0.5);
