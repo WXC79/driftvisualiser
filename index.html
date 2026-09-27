@@ -10,8 +10,8 @@
   <meta name="apple-mobile-web-app-title" content="DRIFT" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
-  <meta name="description" content="DRIFT 12.11.16 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
-  <title>DRIFT 12.11.16 — Generative Music Visualiser</title>
+  <meta name="description" content="DRIFT 12.11.17 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
+  <title>DRIFT 12.11.17 — Generative Music Visualiser</title>
   <script>
     (function(){
       function standalone(){
@@ -41,7 +41,7 @@
       });
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=12.11.16" />
+  <link rel="stylesheet" href="style.css?v=12.11.17" />
 </head>
 <body>
   <canvas id="gl"></canvas>
@@ -50,7 +50,7 @@
   <main id="ui" class="ui visible">
     <section class="panel" id="landing">
       <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
-      <div class="brand">DRIFT 12.11.16</div>
+      <div class="brand">DRIFT 12.11.17</div>
       <h1>GENERATIVE CLOUD VISUALISER</h1>
       <p class="lede">Choose music from your device. The file stays local: nothing is uploaded.</p>
 
@@ -59,7 +59,16 @@
       <p id="fileName" class="filename">No track loaded</p>
 
       <div class="transport">
-        <button id="playBtn" class="iconButton" disabled aria-label="Play" title="Play or pause the selected music">▶</button>
+        <button id="playBtn" class="iconButton cloudTransport" disabled aria-label="Play" title="Play or pause the selected music" data-state="play">
+          <svg class="cloudTransportSvg" viewBox="0 0 96 64" aria-hidden="true">
+            <path class="cloudShape" d="M22 52h50c10 0 18-7 18-16 0-8-7-15-16-16C71 10 62 4 52 4 40 4 30 12 27 23c-2-1-5-2-8-2C10 21 4 28 4 36s7 16 18 16z"/>
+            <path class="playGlyph" d="M42 22 62 32 42 42z"/>
+            <g class="pauseGlyph">
+              <rect x="40" y="21" width="6" height="22" rx="2"/>
+              <rect x="52" y="21" width="6" height="22" rx="2"/>
+            </g>
+          </svg>
+        </button>
         <button id="loopBtn" class="iconButton" aria-label="Loop" aria-pressed="false" title="Loop the current track">↻</button>
         <button id="shuffleBtn" class="iconButton" aria-label="Regenerate journey" title="Regenerate the visual journey with a new random seed">⤨</button>
         <button id="fullBtn" class="iconButton" aria-label="Fullscreen" title="Enter or exit fullscreen">⛶</button>
@@ -95,12 +104,12 @@
         <span id="status">Waiting for music</span>
         <span id="scene">BLUE SKY</span>
       </div>
-      <p class="hint">12.11.16 keeps the locked 12.11.15 scene design unchanged. This build only adds the new DRIFT icon and an iOS portrait Home Screen viewport workaround.</p>
+      <p class="hint"><strong>Double-tap the visual to toggle controls.</strong><br>Music shapes Drift gradually rather than triggering beat-by-beat flashes. 12.11.17 keeps the locked scene design and portrait fullscreen workaround.</p>
     </section>
   </main>
 
   <audio id="audio" preload="metadata"></audio>
-  <script src="app.js?v=12.11.16"></script>
+  <script src="app.js?v=12.11.17"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));

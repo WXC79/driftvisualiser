@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '12.11.8';
+  const DRIFT_BUILD = '12.11.17';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -397,7 +397,7 @@
   let calibrated = false;
 
   const A = {
-    bass:.5, mid:.5, high:.5, overall:.5, brightness:.5, flux:.0, pulse:.0, activity:.0,
+    bass:.5, mid:.5, high:.5, overall:.5, brightness:.5, flux:.0, pulse:.0, activity:.0, rhythm:.0,
     slowBass:.5, slowMid:.5, slowHigh:.5, slowOverall:.5,
     baseBass:.1, baseMid:.1, baseHigh:.1, baseOverall:.1, baseFlux:.06, baseBright:.2,
     devBass:.08, devMid:.08, devHigh:.08, devOverall:.08, devFlux:.04, devBright:.05
@@ -482,7 +482,17 @@
     const lowPunch = clamp01((bass - A.slowBass) * 1.15 + fluxMetric*0.08);
     const transient = clamp01((overall - A.slowOverall) * 1.20 + fluxMetric*0.16 + lowPunch*0.12);
     const tonalMovement = clamp01(Math.abs(bass-A.slowBass)*0.95 + Math.abs(mid-A.slowMid)*1.10 + Math.abs(high-A.slowHigh)*1.05);
-    const activityTarget = clamp01(A.slowOverall*0.20 + mid*0.20 + high*0.12 + tonalMovement*0.36 + fluxMetric*0.08 + transient*0.04);
+
+    // Sustained rhythmic energy: repeated transients/flux gradually raise the climate
+    // over several seconds, rather than making individual beats punch the picture.
+    const rhythmTarget = clamp01(fluxMetric*0.46 + transient*0.28 + lowPunch*0.16 + mid*0.10);
+    const rhythmRate = rhythmTarget > A.rhythm ? 0.32 : 0.12;
+    A.rhythm = expSmooth(A.rhythm, rhythmTarget, rhythmRate, dt);
+
+    const activityTarget = clamp01(
+      A.slowOverall*0.18 + mid*0.19 + high*0.11 + tonalMovement*0.34 +
+      fluxMetric*0.07 + transient*0.03 + A.rhythm*0.08
+    );
 
     A.pulse=expSmooth(A.pulse, transient, 3.0, dt);
     A.bass=expSmooth(A.bass,bass,5.2,dt);
@@ -506,14 +516,14 @@
   }
 
   function pickScene(now) {
-    const e=A.slowOverall, b=A.slowBass, m=A.slowMid, h=A.slowHigh, br=A.brightness, f=A.flux, p=A.pulse, act=A.activity;
+    const e=A.slowOverall, b=A.slowBass, m=A.slowMid, h=A.slowHigh, br=A.brightness, f=A.flux, p=A.pulse, act=A.activity, rhy=A.rhythm;
     const s = new Float32Array(8);
     s[0] = 0.16 + br*0.24 + h*0.14 + (1-Math.abs(e-0.48))*0.16 + (1-f)*0.05;     // sunrise
     s[1] = 0.15 + br*0.26 + (1-b)*0.12 + (1-f)*0.04;                                // blue
-    s[2] = 0.10 + br*0.34 + h*0.14 + act*0.14 + p*0.05;                             // sunlight
+    s[2] = 0.10 + br*0.34 + h*0.14 + act*0.14 + p*0.03 + rhy*0.06;                  // sunlight
     s[3] = 0.12 + (1-e)*0.24 + (1-br)*0.12 + m*0.06;                                // mist
     s[4] = 0.10 + b*0.24 + (1-br)*0.28 + (1-h)*0.08 + act*0.05;                     // dark
-    s[5] = 0.04 + f*0.58 + act*0.30 + b*0.16 + p*0.10;                              // storm
+    s[5] = 0.04 + f*0.54 + act*0.28 + b*0.16 + p*0.06 + rhy*0.14;                  // storm
     s[6] = 0.11 + (1-Math.abs(e-0.48))*0.15 + (1-br)*0.16 + h*0.10 + act*0.06;      // sunset
     s[7] = 0.08 + (1-br)*0.32 + (1-e)*0.28 + b*0.10 + (1-h)*0.06;                   // night
 
@@ -564,7 +574,7 @@
     calibrated = false;
     previewInitialized = false;
     Object.assign(A, {
-      bass:.5, mid:.5, high:.5, overall:.5, brightness:.5, flux:.0, pulse:.0, activity:.0,
+      bass:.5, mid:.5, high:.5, overall:.5, brightness:.5, flux:.0, pulse:.0, activity:.0, rhythm:.0,
       slowBass:.5, slowMid:.5, slowHigh:.5, slowOverall:.5,
       baseBass:.1, baseMid:.1, baseHigh:.1, baseOverall:.1, baseFlux:.06, baseBright:.2,
       devBass:.08, devMid:.08, devHigh:.08, devOverall:.08, devFlux:.04, devBright:.05
@@ -601,10 +611,10 @@
   function updateCamera(t,dt) {
     const desiredYaw=Math.sin(t*0.033+seed[0])*0.44+Math.sin(t*0.011+seed[1])*0.28 + (A.slowMid-0.5)*0.07;
     yaw=expSmooth(yaw,desiredYaw,0.26 + A.activity*0.15,dt);
-    const speedBase=(11.8 + A.slowMid*3.0 + A.slowHigh*0.7 + A.slowOverall*1.4 + A.activity*0.75 + A.pulse*0.12) * 1.06;
+    const speedBase=(11.8 + A.slowMid*3.0 + A.slowHigh*0.7 + A.slowOverall*1.4 + A.activity*0.75 + A.rhythm*0.48 + A.pulse*0.08) * 1.06;
     const speed=speedBase*parseFloat(speedSlider.value);
     const direction=yaw+Math.sin(t*0.047+seed[1])*0.10;
-    const lateral=(Math.sin(t*0.071+seed[0])*0.70+Math.sin(t*0.023+seed[1])*0.30)*(0.78 + A.activity*0.28);
+    const lateral=(Math.sin(t*0.071+seed[0])*0.70+Math.sin(t*0.023+seed[1])*0.30)*(0.78 + A.activity*0.28 + A.rhythm*0.10);
     camera.x+=(Math.sin(direction)*speed+Math.cos(direction)*lateral)*dt;
     camera.z+=(-Math.cos(direction)*speed+Math.sin(direction)*lateral)*dt;
     travel+=speed*dt;
@@ -742,7 +752,8 @@
 
   function syncTransportState(){
     const actuallyPlaying = !audio.paused && !audio.ended && audio.readyState >= 2;
-    playBtn.textContent = actuallyPlaying ? 'Ⅱ' : '▶';
+    playBtn.dataset.state = actuallyPlaying ? 'pause' : 'play';
+    playBtn.setAttribute('aria-label', actuallyPlaying ? 'Pause' : 'Play');
     if(!actuallyPlaying){
       releaseScreenWakeLock();
       if(audio.currentTime>0 && !audio.ended) statusEl.textContent='Paused';

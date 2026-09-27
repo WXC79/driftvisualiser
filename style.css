@@ -191,3 +191,57 @@ input[type="range"] { width:100%; accent-color:#e8ebee; }
     height: var(--drift-viewport-h, calc(100lvh + env(safe-area-inset-bottom)));
   }
 }
+
+
+/* 12.11.17 — boutique transport control */
+.cloudTransport {
+  position: relative;
+  min-width: 76px;
+  padding: 0 8px;
+  border: none !important;
+  background: transparent !important;
+  overflow: visible;
+}
+.cloudTransportSvg {
+  width: 68px;
+  height: 45px;
+  display: block;
+  margin: 0 auto;
+  overflow: visible;
+  filter: drop-shadow(0 3px 9px rgba(0,0,0,.18));
+  transition: transform .18s ease, filter .18s ease;
+}
+.cloudTransport .cloudShape {
+  fill: rgba(248,248,246,.96);
+  transition: fill .22s ease;
+}
+.cloudTransport .playGlyph {
+  fill: #111;
+  opacity: 1;
+  transition: opacity .16s ease;
+}
+.cloudTransport .pauseGlyph {
+  fill: rgba(255,255,255,.96);
+  opacity: 0;
+  transition: opacity .16s ease;
+}
+.cloudTransport[data-state="pause"] .cloudShape {
+  fill: rgba(122,127,132,.96);
+}
+.cloudTransport[data-state="pause"] .playGlyph {
+  opacity: 0;
+}
+.cloudTransport[data-state="pause"] .pauseGlyph {
+  opacity: 1;
+}
+.cloudTransport:active .cloudTransportSvg {
+  transform: scale(.95);
+}
+.cloudTransport:disabled {
+  opacity: .24;
+}
+.hint strong {
+  color: rgba(255,255,255,.58);
+  font-weight: 500;
+  letter-spacing: .03em;
+}
