@@ -1,10 +1,10 @@
 {
-  "name": "DRIFT — Generative Cloud Visualiser",
+  "name": "DRIFT \u2014 Generative Cloud Visualiser",
   "short_name": "DRIFT",
   "description": "A generative cloud visualiser for ambient and atmospheric music.",
   "start_url": "./",
   "scope": "./",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#05070b",
   "theme_color": "#05070b",
   "orientation": "any",
@@ -19,5 +19,9 @@
       "sizes": "512x512",
       "type": "image/png"
     }
+  ],
+  "display_override": [
+    "fullscreen",
+    "standalone"
   ]
 }

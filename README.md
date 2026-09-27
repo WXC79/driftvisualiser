@@ -1,16 +1,16 @@
-# DRIFT 12.12.1 — Touch Clouds repair pass
+# DRIFT 12.12.2 — true-fullscreen repair
 
-Based on 12.12.0.
+Built directly from 12.12.1.
 
-Fixes:
-- Restores double-tap menu reveal on iPhone/touch devices using a proper tap-vs-hold split:
-  - quick taps = tap / double tap
-  - hold = cloud generation
-- Removed the two-finger reopen gesture from the interaction flow.
-- Added stronger suppression of iPhone text-selection / copy / translate callouts on the visual.
-- Improved fullscreen / viewport fill by sizing the app from the live innerHeight and applying that size to the canvas and overlay.
-- Touch clouds can continue building for longer while held / dragged, with a larger touch-cloud history.
+Fullscreen changes:
+- Removes the innerHeight-based sizing that was leaving a black strip on iPhone.
+- In Home Screen / standalone mode, DRIFT sizes itself to the full physical CSS screen dimensions.
+- WebGL now renders from the actual canvas bounds rather than window.innerHeight.
+- Manifest display mode changed to `fullscreen` with `standalone` fallback.
+- Keeps `viewport-fit=cover` so the visual can extend through iPhone safe areas.
+- Service-worker cache bumped.
 
-What stays the same:
-- touch clouds still grow while being dragged and lock into the scene on release
-- scene tuning and pacing from 12.12.0
+Touch-cloud behaviour and scene tuning are unchanged from 12.12.1.
+
+IMPORTANT:
+Because the manifest display mode changed, iPhone may require deleting the old Home Screen icon and adding DRIFT to the Home Screen again once for the new fullscreen manifest to take effect.

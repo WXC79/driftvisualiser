@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '12.12.1';
+  const DRIFT_BUILD = '12.12.2';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -25,18 +25,42 @@
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
   if (isStandalone) {
-    fullBtn.title = 'Running as a Home Screen web app';
-    fullBtn.setAttribute('aria-label', 'Home Screen app mode');
+    fullBtn.title = 'Fullscreen';
+    fullBtn.setAttribute('aria-label', 'Fullscreen');
   }
 
-  function updateViewportHeight(){
-    const h = `${window.innerHeight}px`;
-    document.documentElement.style.setProperty('--app-height', h);
+  function updateViewportSize(){
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+
+    if(isStandalone){
+      const sw = Math.max(screen.width || 0, screen.availWidth || 0);
+      const sh = Math.max(screen.height || 0, screen.availHeight || 0);
+      const landscape = window.matchMedia('(orientation: landscape)').matches;
+      if(sw > 0 && sh > 0){
+        w = landscape ? Math.max(sw, sh) : Math.min(sw, sh);
+        h = landscape ? Math.min(sw, sh) : Math.max(sw, sh);
+      }
+    } else if(window.visualViewport){
+      w = Math.max(w, window.visualViewport.width);
+      h = Math.max(h, window.visualViewport.height);
+    }
+
+    document.documentElement.style.setProperty('--app-width', `${Math.ceil(w)}px`);
+    document.documentElement.style.setProperty('--app-height', `${Math.ceil(h)}px`);
+    document.body.style.width = `${Math.ceil(w)}px`;
+    document.body.style.height = `${Math.ceil(h)}px`;
   }
-  updateViewportHeight();
-  window.addEventListener('resize', updateViewportHeight, {passive:true});
-  window.addEventListener('orientationchange', updateViewportHeight, {passive:true});
-  window.addEventListener('pageshow', updateViewportHeight, {passive:true});
+  updateViewportSize();
+  window.addEventListener('resize', updateViewportSize, {passive:true});
+  window.addEventListener('orientationchange',()=>{
+    setTimeout(updateViewportSize,60);
+    setTimeout(updateViewportSize,260);
+  },{passive:true});
+  window.addEventListener('pageshow', updateViewportSize, {passive:true});
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', updateViewportSize, {passive:true});
+  }
 
 
   const gl = canvas.getContext('webgl2', {
@@ -757,9 +781,16 @@
   let fpsAccum=0, fpsFrames=0, fpsTimer=0;
   function resize() {
     const dpr=Math.min(window.devicePixelRatio||1,1.65);
-    const w=Math.max(2,Math.floor(innerWidth*dpr*qualityScale));
-    const h=Math.max(2,Math.floor(innerHeight*dpr*qualityScale));
-    if(canvas.width!==w||canvas.height!==h){ canvas.width=w; canvas.height=h; gl.viewport(0,0,w,h); }
+    const rect=canvas.getBoundingClientRect();
+    const cssW=Math.max(window.innerWidth, rect.width || 0);
+    const cssH=Math.max(window.innerHeight, rect.height || 0);
+    const w=Math.max(2,Math.floor(cssW*dpr*qualityScale));
+    const h=Math.max(2,Math.floor(cssH*dpr*qualityScale));
+    if(canvas.width!==w||canvas.height!==h){
+      canvas.width=w;
+      canvas.height=h;
+      gl.viewport(0,0,w,h);
+    }
   }
   window.addEventListener('resize',resize,{passive:true});
 
