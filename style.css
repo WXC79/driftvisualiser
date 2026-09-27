@@ -5,50 +5,22 @@
   background: #05070b;
 }
 * { box-sizing: border-box; }
-:root {
-  --app-width: 100vw;
-  --app-height: 100dvh;
-}
 html, body {
-  position: fixed;
-  inset: 0;
-  width: var(--app-width);
-  height: var(--app-height);
-  min-width: 100vw;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  overscroll-behavior: none;
-  background: #05070b;
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
+  width:100%;
+  height:100%;
+  margin:0;
+  overflow:hidden;
+  background:#05070b;
 }
 body { touch-action: manipulation; }
-#gl, #vignette {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: var(--app-width);
-  height: var(--app-height);
-}
-#gl {
-  display: block;
-  background: #05070b;
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-}
+#gl { position:fixed; inset:0; width:100%; height:100%; display:block; background:#05070b; }
 #vignette {
-  pointer-events: none;
+  position:fixed; inset:0; pointer-events:none;
   background: radial-gradient(circle at 50% 45%, transparent 46%, rgba(0,0,0,.08) 72%, rgba(0,0,0,.28) 118%);
 }
 .ui {
   position:fixed;
   inset:0;
-  width:var(--app-width);
-  height:var(--app-height);
   display:grid;
   place-items:center;
   padding:max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom)) 18px;
@@ -213,13 +185,9 @@ input[type="range"] { width:100%; accent-color:#e8ebee; }
   .toggleRow { grid-template-columns: 96px auto !important; }
 }
 
-
-/* 12.12.2: force the visual surface through all iPhone safe areas */
-@supports (padding: max(0px)) {
-  html, body, #gl, #vignette, .ui {
-    margin: 0 !important;
-  }
-  #gl, #vignette {
-    transform: translateZ(0);
-  }
+/* 12.12.3: iPhone touch interaction without changing the 12.11.8 fullscreen layout */
+#gl {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }

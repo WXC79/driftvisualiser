@@ -1,16 +1,19 @@
-# DRIFT 12.12.2 — true-fullscreen repair
+# DRIFT 12.12.3 — fullscreen rollback + touch isolation
 
-Built directly from 12.12.1.
+This build deliberately goes back to the exact fullscreen/layout system used by
+12.11.8, the last confirmed build with no black strip.
 
-Fullscreen changes:
-- Removes the innerHeight-based sizing that was leaving a black strip on iPhone.
-- In Home Screen / standalone mode, DRIFT sizes itself to the full physical CSS screen dimensions.
-- WebGL now renders from the actual canvas bounds rather than window.innerHeight.
-- Manifest display mode changed to `fullscreen` with `standalone` fallback.
-- Keeps `viewport-fit=cover` so the visual can extend through iPhone safe areas.
-- Service-worker cache bumped.
+The touchscreen cloud feature remains, but:
+- there are NO dynamic viewport / innerHeight / screen-height fullscreen hacks;
+- the manifest remains the same standalone mode used by 12.11.8;
+- the canvas keeps the exact 12.11.8 fixed inset / 100% layout;
+- `touch-action:none` has been removed;
+- iPhone callouts are suppressed only on the canvas with event prevention;
+- quick double tap reopens the menu;
+- hold generates clouds;
+- drag keeps generating;
+- release leaves the generated cloud in the world;
+- touch history increased to 32 cloud stamps and hold growth continues for longer.
 
-Touch-cloud behaviour and scene tuning are unchanged from 12.12.1.
-
-IMPORTANT:
-Because the manifest display mode changed, iPhone may require deleting the old Home Screen icon and adding DRIFT to the Home Screen again once for the new fullscreen manifest to take effect.
+This is an isolation build: the fullscreen layout is intentionally returned to the
+known-good pre-touch implementation so the touch feature cannot alter viewport sizing.
