@@ -1,13 +1,12 @@
-# DRIFT 12.11.2 — scene refinement build
+# DRIFT 12.11.4 — slower weight / mist background refinement
 
-Stable 12.11.x base with a small speed increase from 12.11.1, but still slower than original 12.11. Forward travel is unchanged.
+Built directly from 12.11.3, keeping its luminance-continuity fixes.
 
 Changes:
-- Cloud generation / morphing sped up a little from 12.11.1.
-- Thunderstorm background changed to a more uniform dark charcoal grey with subtle variation and grain, without the bad hue gradient.
-- Reduced abrupt overall brightness drops by lowering direct audio-driven luminance swings.
-- Blue Sky clouds can be whiter again.
-- Sunrise clouds carry more orange warmth.
-- Sunset clouds carry more pink tint.
-- Grain changed to a less obviously repeating, more non-uniform pattern.
-- No playlist / multi-track system in this build.
+- Cloud generation / morphing slowed back down to approximately the 12.11.1 pace.
+- Forward travel reduced slightly (~8%) to give the environment more weight.
+- Mist now has its own blue-grey backing rather than inheriting Blue Sky.
+- Mist background uses a smooth blue-grey gradient with only extremely fine dithering to prevent visible contour bands.
+- No playlist / multi-track code.
+
+The 12.11.3 brightness continuity changes are retained.

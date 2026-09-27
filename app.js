@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '12.11.2';
+  const DRIFT_BUILD = '12.11.4';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -93,19 +93,19 @@
   }
 
   float cloudDensity(vec3 p,float fog,float openness,float motion,float pulse,float activity){
-    vec3 advect=vec3(uTime*(0.000103+motion*0.000059+activity*0.000043),uTime*0.0000375,-uTime*(0.000075+motion*0.000052));
+    vec3 advect=vec3(uTime*(0.000099+motion*0.000057+activity*0.000041),uTime*0.000036,-uTime*(0.000072+motion*0.000050));
     vec3 pp=p+advect;
-    pp.y += sin(pp.x*0.010+uTime*0.255)*0.5*activity;
-    pp.z += sin(pp.y*0.013-uTime*0.228)*0.7*(pulse*0.55+activity*0.18);
+    pp.y += sin(pp.x*0.010+uTime*0.245)*0.5*activity;
+    pp.z += sin(pp.y*0.013-uTime*0.218)*0.7*(pulse*0.55+activity*0.18);
     float large=noise3(pp*0.0102+vec3(uSeed.x*0.071,uSeed.y*0.053,2.1));
     float body=noise3(pp*0.0185+vec3(6.0+uSeed.x*0.02,-2.0,11.0+uSeed.y*0.03));
     float detail=noise3(pp*0.0375+vec3(13.0+uSeed.y*0.03,-7.0,5.0+uSeed.x*0.02));
     float field=large*0.68+body*0.24+detail*0.08;
     float threshold=0.534+openness*0.12-fog*0.11;
-    threshold -= (uAudioSlow.x-0.5)*0.092*uIntensity;
-    threshold -= (uAudioSlow.y-0.5)*0.028*uIntensity;
+    threshold -= (uAudioSlow.x-0.5)*0.055*uIntensity;
+    threshold -= (uAudioSlow.y-0.5)*0.015*uIntensity;
     threshold -= activity*0.006;
-    float d=smoothstep(threshold,threshold+0.11,field);
+    float d=smoothstep(threshold,threshold+0.145,field);
     d=pow(d,1.14);
     d *= 0.92 + uAudioSlow.w*0.15 + activity*0.035;
     float altitude=0.88+0.12*sin(p.y*0.008+uSeed.x);
@@ -130,8 +130,8 @@
     float grainBase=sunrise*0.030+blue*0.022+sunlight*0.030+mist*0.29+darkP*0.085+storm*0.160+sunset*0.042+night*0.108;
     float ambient=sunrise*0.73+blue*0.76+sunlight*0.76+mist*0.45+darkP*0.22+storm*0.085+sunset*0.70+night*0.045;
 
-    float fog=clamp((fogBase/0.75)*(0.93+(uAudioSlow.x-0.5)*0.22*uIntensity + (uAudioSlow.w-0.5)*0.06*uIntensity),0.0,1.0);
-    float openness=clamp((openBase/0.75)+(brightness-0.5)*0.10*uIntensity+(uAudioSlow.z-0.5)*0.03*uIntensity - storm*0.04 - night*0.04,0.0,1.0);
+    float fog=clamp((fogBase/0.75)*(0.95+(uAudioSlow.x-0.5)*0.14*uIntensity + (uAudioSlow.w-0.5)*0.035*uIntensity),0.0,1.0);
+    float openness=clamp((openBase/0.75)+(brightness-0.5)*0.040*uIntensity+(uAudioSlow.z-0.5)*0.015*uIntensity - storm*0.04 - night*0.04,0.0,1.0);
     float motion=0.72 + uAudioSlow.y*0.58 + flux*0.10 + activity*0.10 + pulse*0.035;
     float grainState=clamp((grainBase/0.75)*(0.72+uAudioSlow.z*0.68+activity*0.12)*uGrain,0.0,1.9);
 
@@ -144,6 +144,8 @@
 
     float skyY=clamp(0.48+rd.y*0.55,0.0,1.0);
     vec3 blueSky=mix(vec3(0.72,0.82,0.90),vec3(0.10,0.34,0.62),skyY);
+    float mistY=smoothstep(0.0,1.0,skyY);
+    vec3 mistSky=mix(vec3(0.50,0.56,0.62),vec3(0.25,0.32,0.39),mistY);
     vec3 sunriseSky=mix(vec3(1.00,0.60,0.30),vec3(0.46,0.39,0.54),skyY);
     vec3 sunsetSky=mix(vec3(0.92,0.44,0.30),vec3(0.30,0.25,0.40),skyY);
     vec3 darkSky=mix(vec3(0.28,0.30,0.32),vec3(0.095,0.105,0.112),skyY);
@@ -152,6 +154,7 @@
 
     vec3 sky=blueSky;
     sky=mix(sky,sunriseSky,sunrise*0.98);
+    sky=mix(sky,mistSky,mist*0.985);
     sky=mix(sky,darkSky,darkP*0.97);
     sky=mix(sky,stormSky,storm*1.00);
     sky=mix(sky,sunsetSky,sunset*0.96);
@@ -176,14 +179,14 @@
     vec3 accum=vec3(0.0);
     float trans=1.0;
     float previousDensity=0.0;
-    const int STEPS=11;
+    const int STEPS=14;
     float maxDistance=180.0;
     float stepLength=maxDistance/float(STEPS);
 
     for(int i=0;i<STEPS;i++){
       float dist=(float(i)+0.38)*stepLength;
       vec3 p=ro+rd*dist;
-      vec3 movingP=p+vec3(uTime*0.00185*motion,uTime*0.00052,-uTime*0.00133*motion);
+      vec3 movingP=p+vec3(uTime*0.00178*motion,uTime*0.00050,-uTime*0.00128*motion);
       float dens=cloudDensity(movingP,fog,openness,motion,pulse,activity);
       float farPresence=0.82+smoothstep(76.0,142.0,dist)*0.17;
       float nearSeparation=0.90+smoothstep(18.0,62.0,dist)*0.10;
@@ -217,7 +220,7 @@
 
       float bodyLight=clamp(0.61-interior*0.45-darkP*0.20-storm*0.40-night*0.40-sunset*0.10+ambient*0.07+blue*0.045,0.018,0.84);
       float lightCap = 0.90 - night*0.24 - sunset*0.12 - storm*0.13;
-      bodyLight=clamp(bodyLight+(brightness-0.5)*0.06*uIntensity + (uAudioSlow.z-0.5)*0.035*uIntensity + pulse*0.004 + activity*0.012,0.018,lightCap);
+      bodyLight=clamp(bodyLight+(brightness-0.5)*0.030*uIntensity + (uAudioSlow.z-0.5)*0.018*uIntensity + pulse*0.003 + activity*0.008,0.018,lightCap);
       vec3 cloud=mix(shadow,lit,bodyLight);
       float greyVar = noise3(movingP*0.020 + vec3(9.0, 3.0, 6.0));
       vec3 rainGrey = mix(vec3(0.17,0.18,0.19), vec3(0.53,0.53,0.54), greyVar);
@@ -255,7 +258,7 @@
       float moonInteriorGlow=(1.0-interior)*pow(moonDot,5.0)*moonPresence*0.004;
       cloud+=moonColor*(moonEdge*0.72+moonInteriorGlow);
 
-      float alpha=1.0-exp(-dens*stepLength*0.052);
+      float alpha=1.0-exp(-dens*stepLength*0.050);
       accum+=trans*cloud*alpha;
       trans*=1.0-alpha;
       previousDensity=dens;
@@ -280,7 +283,9 @@
     base=mix(base,vec3(0.20,0.21,0.22),storm*(1.0-cloudImmersion)*0.020);
     base=mix(base, vec3(0.13,0.14,0.17), night*cloudImmersion*0.040);
     float skyDither=(noise2(uv*vec2(503.0,337.0)+vec2(uTime*0.07,-uTime*0.05)+uSeed*2.3)-0.5);
+    float mistDither=(noise2(vec2(uv.x*719.3+uv.y*211.7, uv.x*-317.9+uv.y*631.1)+uSeed*5.7)-0.5);
     base += vec3(skyDither) * (storm*0.008 + sunrise*0.003 + sunset*0.003) * (0.75 - cloudImmersion*0.30);
+    base += vec3(mistDither) * mist * 0.004 * (0.85 - cloudImmersion*0.25);
     fragColor=vec4(clamp(base,0.0,1.0),1.0);
   }
   `;
@@ -545,7 +550,7 @@
   function updateCamera(t,dt) {
     const desiredYaw=Math.sin(t*0.033+seed[0])*0.44+Math.sin(t*0.011+seed[1])*0.28 + (A.slowMid-0.5)*0.07;
     yaw=expSmooth(yaw,desiredYaw,0.26 + A.activity*0.15,dt);
-    const speedBase=(11.8 + A.slowMid*3.0 + A.slowHigh*0.7 + A.slowOverall*1.4 + A.activity*0.75 + A.pulse*0.12) * 1.15;
+    const speedBase=(11.8 + A.slowMid*3.0 + A.slowHigh*0.7 + A.slowOverall*1.4 + A.activity*0.75 + A.pulse*0.12) * 1.06;
     const speed=speedBase*parseFloat(speedSlider.value);
     const direction=yaw+Math.sin(t*0.047+seed[1])*0.10;
     const lateral=(Math.sin(t*0.071+seed[0])*0.70+Math.sin(t*0.023+seed[1])*0.30)*(0.78 + A.activity*0.28);
@@ -624,9 +629,8 @@
 
     fpsAccum+=1/dt; fpsFrames++; fpsTimer+=dt;
     if(fpsTimer>6){
-      const fps=fpsAccum/fpsFrames;
-      if(fps<34 && qualityScale>.58) qualityScale=Math.max(.58,qualityScale-.08);
-      else if(fps>54 && qualityScale<.90) qualityScale=Math.min(.90,qualityScale+.04);
+      // Keep render scale fixed during playback. Changing canvas resolution while
+      // running can make the entire image appear to jump, especially with dense grain.
       fpsAccum=0; fpsFrames=0; fpsTimer=0;
     }
     requestAnimationFrame(frame);
