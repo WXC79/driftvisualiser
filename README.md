@@ -1,33 +1,16 @@
-# DRIFT 12.8 — Home Screen / PWA build
+# DRIFT 12.9 — Slower transitions / slower cloud evolution
 
-This update keeps the 12.7 behaviour and adds proper web-app packaging for phones.
+This build keeps the 12.8 Home Screen/PWA packaging and changes the pacing.
 
-## New in 12.8
+## Changes
 
-- Web App Manifest
-- iPhone Home Screen icon
-- Android/Chrome install metadata
-- standalone app display mode
-- service worker for the core site files
-- safe-area handling for standalone iPhone use
+- AUTO scene transitions are now roughly **38–62 seconds** long, using a gentler quintic crossfade.
+- A scene now dwells for roughly **42–86 seconds after the transition** before AUTO chooses another state.
+- Manual scene changes crossfade over about **18 seconds** instead of 8.
+- Internal cloud formation/evolution is slowed by roughly **20–25%**.
+- Forward travel speed is intentionally left alone; this change targets cloud morphing/generation rather than the feeling of moving through the field.
+- Home Screen / standalone mode remains included.
 
-## Upload/update on GitHub Pages
+## GitHub Pages update
 
-Replace/add these files in the root of your GitHub repository:
-
-- index.html
-- style.css
-- app.js
-- manifest.webmanifest
-- service-worker.js
-- apple-touch-icon.png
-- icon-192.png
-- icon-512.png
-
-Commit the changes and wait for GitHub Pages to redeploy.
-
-## iPhone Home Screen
-
-Open the live DRIFT page in Safari, choose Share, choose Add to Home Screen, enable Open as Web App if offered, then tap Add.
-
-Launching DRIFT from the new Home Screen icon removes the ordinary Safari browser chrome and gives the closest iPhone experience to a true fullscreen app.
+Replace the files in your repo root with the contents of this package and commit. The service worker cache name was also bumped so the new files should replace the prior cached build.

@@ -92,10 +92,10 @@
   }
 
   float cloudDensity(vec3 p,float fog,float openness,float motion,float pulse,float activity){
-    vec3 advect=vec3(uTime*(0.00014+motion*0.00008+activity*0.00006),uTime*0.00005,-uTime*(0.00010+motion*0.00007));
+    vec3 advect=vec3(uTime*(0.000108+motion*0.000062+activity*0.000045),uTime*0.000039,-uTime*(0.000078+motion*0.000054));
     vec3 pp=p+advect;
-    pp.y += sin(pp.x*0.010+uTime*0.35)*0.5*activity;
-    pp.z += sin(pp.y*0.013-uTime*0.31)*0.7*(pulse*0.55+activity*0.18);
+    pp.y += sin(pp.x*0.010+uTime*0.27)*0.5*activity;
+    pp.z += sin(pp.y*0.013-uTime*0.24)*0.7*(pulse*0.55+activity*0.18);
     float large=noise3(pp*0.0102+vec3(uSeed.x*0.071,uSeed.y*0.053,2.1));
     float body=noise3(pp*0.0185+vec3(6.0+uSeed.x*0.02,-2.0,11.0+uSeed.y*0.03));
     float detail=noise3(pp*0.0375+vec3(13.0+uSeed.y*0.03,-7.0,5.0+uSeed.x*0.02));
@@ -156,11 +156,11 @@
     sky=mix(sky,sunsetSky,sunset*0.96);
     sky=mix(sky,nightSky,night*0.985);
 
-    float sunAz=uTime*0.055+uSeed.x;
-    float sunEl=0.16+0.30*sin(uTime*0.037+uSeed.y);
+    float sunAz=uTime*0.043+uSeed.x;
+    float sunEl=0.16+0.30*sin(uTime*0.029+uSeed.y);
     vec3 sunDir=normalize(vec3(cos(sunAz)*cos(sunEl),sin(sunEl),sin(sunAz)*cos(sunEl)));
-    float moonAz=uTime*0.024+uSeed.y+2.3;
-    float moonEl=0.24+0.13*sin(uTime*0.021+uSeed.x);
+    float moonAz=uTime*0.019+uSeed.y+2.3;
+    float moonEl=0.24+0.13*sin(uTime*0.016+uSeed.x);
     vec3 moonDir=normalize(vec3(cos(moonAz)*cos(moonEl),sin(moonEl),sin(moonAz)*cos(moonEl)));
     float sunDot=max(0.0,dot(rd,sunDir));
     float moonDot=max(0.0,dot(rd,moonDir));
@@ -182,7 +182,7 @@
     for(int i=0;i<STEPS;i++){
       float dist=(float(i)+0.38)*stepLength;
       vec3 p=ro+rd*dist;
-      vec3 movingP=p+vec3(uTime*0.0025*motion,uTime*0.0007,-uTime*0.0018*motion);
+      vec3 movingP=p+vec3(uTime*0.00195*motion,uTime*0.00055,-uTime*0.00140*motion);
       float dens=cloudDensity(movingP,fog,openness,motion,pulse,activity);
       float farPresence=0.82+smoothstep(76.0,142.0,dist)*0.17;
       float nearSeparation=0.90+smoothstep(18.0,62.0,dist)*0.10;
@@ -304,9 +304,10 @@
   let targetScene = 1;
   let manualScene = null; // null = AUTO; 0...7 = locked scene
   let transitionStart = 0;
-  let transitionDuration = 24;
-  let nextDecision = 28;
+  let transitionDuration = 46;
+  let nextDecision = 78;
   let seed = [Math.random()*100, Math.random()*100];
+  const transitionFrom = new Float32Array(8);
 
   let objectURL = null;
   let audioCtx = null;
@@ -463,10 +464,13 @@
     let r=Math.random()*total, chosen=1;
     for(let i=0;i<8;i++){ r-=s[i]; if(r<=0){ chosen=i; break; } }
 
+    for(let i=0;i<8;i++) transitionFrom[i]=sceneWeights[i];
     targetScene=chosen;
     transitionStart=now;
-    transitionDuration=calibrated ? (14 + (1-act)*10 + Math.random()*8) : 18;
-    nextDecision=now + (calibrated ? (20 + (1-act)*18 + Math.random()*12 - f*5) : 18);
+    // 12.9: intentionally slow, atmospheric scene changes.
+    transitionDuration=calibrated ? (38 + (1-act)*12 + Math.random()*12) : 42;
+    const dwellAfterTransition = 42 + (1-act)*22 + Math.random()*22;
+    nextDecision=now + transitionDuration + dwellAfterTransition;
   }
 
   function resetJourney() {
@@ -475,7 +479,8 @@
     currentScene=startScene; targetScene=startScene;
     sceneWeights.fill(0); sceneWeights[startScene]=1;
     transitionStart=performance.now()/1000;
-    nextDecision=transitionStart+12;
+    for(let i=0;i<8;i++) transitionFrom[i]=sceneWeights[i];
+    nextDecision=transitionStart+72;
     camera.x=0; camera.y=0; camera.z=0; travel=0; yaw=0; pitch=0;
     calibrated = false;
     previewInitialized = false;
@@ -493,16 +498,19 @@
     if (manualScene === null) {
       if (calibrated && now>=nextDecision && (audioReady ? !audio.paused : true)) pickScene(now);
     } else if (targetScene !== manualScene) {
+      for(let i=0;i<8;i++) transitionFrom[i]=sceneWeights[i];
       targetScene = manualScene;
       transitionStart = now;
-      transitionDuration = 8.0;
+      transitionDuration = 18.0;
     }
     const mixDur=Math.max(1,transitionDuration);
     const t=clamp01((now-transitionStart)/mixDur);
-    const eased=t*t*(3-2*t);
-    const target = new Float32Array(8); target[targetScene]=1;
-    const k=1-Math.exp(-dt*(0.24+eased*0.42+A.activity*0.12));
-    for(let i=0;i<8;i++) sceneWeights[i]+= (target[i]-sceneWeights[i])*k;
+    // Quintic smoothstep: slower departure and arrival than the previous crossfade.
+    const eased=t*t*t*(t*(t*6.0-15.0)+10.0);
+    for(let i=0;i<8;i++) {
+      const targetWeight = i===targetScene ? 1.0 : 0.0;
+      sceneWeights[i] = transitionFrom[i] + (targetWeight-transitionFrom[i])*eased;
+    }
     let best=0; for(let i=1;i<8;i++) if(sceneWeights[i]>sceneWeights[best]) best=i;
     if(t>=1 && currentScene!==targetScene) currentScene=targetScene;
     sceneEl.textContent=SCENES[best];
@@ -645,12 +653,13 @@
     manualScene = sceneMode.value === 'auto' ? null : Number(sceneMode.value);
     const now = performance.now()/1000;
     if (manualScene === null) {
-      nextDecision = now + 2.5;
+      nextDecision = now + 12.0;
       statusEl.textContent = audio.paused ? 'AUTO mode' : 'DRIFTING · AUTO';
     } else {
+      for(let i=0;i<8;i++) transitionFrom[i]=sceneWeights[i];
       targetScene = manualScene;
       transitionStart = now;
-      transitionDuration = 8.0;
+      transitionDuration = 18.0;
       statusEl.textContent = `Scene locked · ${SCENES[manualScene]}`;
     }
   });
