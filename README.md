@@ -1,15 +1,13 @@
-# DRIFT 12.11.12 — Sunlight Texture + Shimmer
+# DRIFT 12.11.13 — Sunlight Beams + Sparkle
 
-Built from 12.11.11.
+Built from 12.11.12.
 
 Sunlight changes:
-- keeps the brighter, sun-saturated atmosphere
-- reduces stark white cloud washout
-- restores visible cloud texture and depth with multi-scale procedural variation
-- cloud bodies now range through off-white, cream and very pale warm grey rather than flat white
-- adds a clearly visible warm yellow shimmer on sun-facing edges
-- adds a subtle warm glow through thinner cloud areas
-- tones down the global brightness lift so cloud structure remains readable
+- adds intermittent subtle sunbeam / sun-haze bursts that appear and disappear sporadically
+- boosts yellow-gold sparkle on sun-facing cloud edges
+- increases warm yellow highlight visibility so the clouds no longer read as only white
+- slightly reduces flat white body lift so cloud texture survives better
+- preserves the brighter sun-filled atmosphere from 12.11.12
 
-Night and all other scene tuning remain unchanged.
+Night and the other scene tuning remain unchanged.
 No touchscreen interaction is included in this build.

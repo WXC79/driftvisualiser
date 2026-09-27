@@ -235,10 +235,10 @@
       float sunTextureA=noise3(movingP*0.027 + vec3(4.0,11.0,19.0));
       float sunTextureB=noise3(movingP*0.061 + vec3(17.0,3.0,8.0));
       float sunTexture=sunTextureA*0.68 + sunTextureB*0.32;
-      vec3 sunlightBodyShadow=mix(vec3(0.69,0.70,0.68),vec3(0.82,0.82,0.78),sunTexture);
-      vec3 sunlightBodyLight=mix(vec3(0.90,0.90,0.85),vec3(0.98,0.97,0.90),sunTexture);
-      vec3 sunlightBody=mix(sunlightBodyShadow,sunlightBodyLight,clamp(bodyLight*0.88+edge*0.28,0.0,1.0));
-      cloud=mix(cloud,sunlightBody,sunlight*(0.54+edge*0.10));
+      vec3 sunlightBodyShadow=mix(vec3(0.67,0.68,0.66),vec3(0.80,0.80,0.76),sunTexture);
+      vec3 sunlightBodyLight=mix(vec3(0.88,0.88,0.83),vec3(0.96,0.95,0.88),sunTexture);
+      vec3 sunlightBody=mix(sunlightBodyShadow,sunlightBodyLight,clamp(bodyLight*0.84+edge*0.24,0.0,1.0));
+      cloud=mix(cloud,sunlightBody,sunlight*(0.48+edge*0.08));
       float greyVar = noise3(movingP*0.020 + vec3(9.0, 3.0, 6.0));
       vec3 rainGrey = mix(vec3(0.17,0.18,0.19), vec3(0.53,0.53,0.54), greyVar);
       cloud = mix(cloud, rainGrey, (darkP*0.34 + storm*0.16) * (0.44 + 0.56*dens));
@@ -273,10 +273,13 @@
       cloud+=sunColor*(sunEdge*(0.30+sunlight*0.44+sunrise*0.22)+sunInteriorGlow+sunlightBounce*0.34+sunlightRim+sunriseRim)*musicSun*(1.0 - sunset*0.08 - night*0.50);
       float shimmerNoise=noise3(movingP*0.052 + vec3(23.0,7.0,uTime*0.055));
       float shimmerPulse=0.55+0.45*sin(uTime*0.42 + sunTextureA*5.6 + movingP.x*0.012);
-      float yellowShimmer=edge*sunlight*(0.18+0.34*sunFacing)*(0.45+0.55*shimmerNoise)*(0.70+0.30*shimmerPulse);
-      float thinGlow=sunlight*(1.0-interior)*dens*(0.030+0.055*sunFacing)*(0.40+0.60*sunTexture);
-      cloud += vec3(1.00,0.82,0.34) * (yellowShimmer*1.45 + thinGlow);
-      cloud += vec3(1.00,0.97,0.84) * edge * sunlight * (0.035 + 0.060*sunFacing);
+      float yellowShimmer=edge*sunlight*(0.24+0.42*sunFacing)*(0.45+0.55*shimmerNoise)*(0.70+0.30*shimmerPulse);
+      float sparkleNoise=smoothstep(0.58,0.90,noise3(movingP*0.15 + vec3(31.0,9.0,uTime*0.11)));
+      float yellowSparkle=edge*sunlight*(0.18+0.26*sunFacing)*sparkleNoise*(0.50+0.50*shimmerPulse)*(0.35+0.65*shimmerNoise);
+      float thinGlow=sunlight*(1.0-interior)*dens*(0.034+0.070*sunFacing)*(0.40+0.60*sunTexture);
+      cloud += vec3(1.00,0.82,0.34) * (yellowShimmer*1.80 + thinGlow);
+      cloud += vec3(1.00,0.76,0.18) * yellowSparkle * 0.32;
+      cloud += vec3(1.00,0.96,0.82) * edge * sunlight * (0.028 + 0.048*sunFacing);
 
       vec3 sunriseEdgeTint = vec3(1.00,0.62,0.34);
       vec3 sunsetEdgeTint = vec3(0.98,0.60,0.72);
@@ -300,8 +303,15 @@
     vec3 base=accum+sky*trans;
     float sunCycle=pow(max(0.0,sin(uTime*0.035+uSeed.x*1.41+uSeed.y*0.53)),6.0);
     float sunlightHaze=pow(sunDot,1.65)*(sunlight*(0.085+sunCycle*0.120) + sunrise*(0.018+sunCycle*0.062));
+    float sunlightBurst=pow(max(0.0,sin(uTime*0.022+uSeed.x*1.17+uSeed.y*0.39)),10.0);
+    float sunlightBeam=pow(sunDot,6.2) * sunlight * sunlightBurst * (0.22+0.78*cloudImmersion);
+    float beamBand1=0.45+0.55*noise2(vec2(atan(rd.z,rd.x)*7.0 + uTime*0.013, rd.y*9.5 + uSeed.x*2.0));
+    float beamBand2=0.45+0.55*noise2(vec2(atan(rd.z,rd.x)*11.5 - uTime*0.010, rd.y*13.0 + uSeed.y*2.4));
+    float sunbeam = sunlightBeam * beamBand1 * beamBand2;
     float moonHaze=pow(moonDot,2.1)*night*(0.022+moonCycle*0.072);
     base+=sunColor*(sunlightHaze*(0.40+0.66*trans));
+    base += vec3(1.00,0.90,0.58) * sunbeam * 0.16;
+    base += vec3(1.00,0.96,0.80) * sunlight * sunlightBurst * pow(sunDot,2.3) * 0.024;
     base = mix(base, base + vec3(0.045,0.038,0.012), sunlight*0.48);
     base+=moonColor*(pow(moonDot,4.0)*moonPresence*0.018 + moonHaze*(0.35+0.65*trans));
 
@@ -317,7 +327,7 @@
     base+=dotNoise*grainEnvelope*0.010;
 
     base=mix(base,vec3(0.61,0.64,0.66),mist*cloudImmersion*0.070);
-    base=mix(base, vec3(min(base.r+0.022,1.0), min(base.g+0.018,1.0), min(base.b+0.006,1.0)), sunlight*0.30);
+    base=mix(base, vec3(min(base.r+0.018,1.0), min(base.g+0.014,1.0), min(base.b+0.004,1.0)), sunlight*0.24);
     base=mix(base,vec3(0.43,0.44,0.45),darkP*(1.0-cloudImmersion)*0.018);
     base=mix(base,vec3(0.20,0.21,0.22),storm*(1.0-cloudImmersion)*0.020);
     base=mix(base, vec3(0.13,0.14,0.17), night*cloudImmersion*0.040);
