@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '12.11.1';
+  const DRIFT_BUILD = '12.11.2';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -93,10 +93,10 @@
   }
 
   float cloudDensity(vec3 p,float fog,float openness,float motion,float pulse,float activity){
-    vec3 advect=vec3(uTime*(0.000099+motion*0.000057+activity*0.000041),uTime*0.000036,-uTime*(0.000072+motion*0.000050));
+    vec3 advect=vec3(uTime*(0.000103+motion*0.000059+activity*0.000043),uTime*0.0000375,-uTime*(0.000075+motion*0.000052));
     vec3 pp=p+advect;
-    pp.y += sin(pp.x*0.010+uTime*0.245)*0.5*activity;
-    pp.z += sin(pp.y*0.013-uTime*0.218)*0.7*(pulse*0.55+activity*0.18);
+    pp.y += sin(pp.x*0.010+uTime*0.255)*0.5*activity;
+    pp.z += sin(pp.y*0.013-uTime*0.228)*0.7*(pulse*0.55+activity*0.18);
     float large=noise3(pp*0.0102+vec3(uSeed.x*0.071,uSeed.y*0.053,2.1));
     float body=noise3(pp*0.0185+vec3(6.0+uSeed.x*0.02,-2.0,11.0+uSeed.y*0.03));
     float detail=noise3(pp*0.0375+vec3(13.0+uSeed.y*0.03,-7.0,5.0+uSeed.x*0.02));
@@ -130,8 +130,8 @@
     float grainBase=sunrise*0.030+blue*0.022+sunlight*0.030+mist*0.29+darkP*0.085+storm*0.160+sunset*0.042+night*0.108;
     float ambient=sunrise*0.73+blue*0.76+sunlight*0.76+mist*0.45+darkP*0.22+storm*0.085+sunset*0.70+night*0.045;
 
-    float fog=clamp((fogBase/0.75)*(0.91+(uAudioSlow.x-0.5)*0.34*uIntensity + (uAudioSlow.w-0.5)*0.10*uIntensity),0.0,1.0);
-    float openness=clamp((openBase/0.75)+(brightness-0.5)*0.17*uIntensity+(uAudioSlow.z-0.5)*0.05*uIntensity - storm*0.05 - night*0.04,0.0,1.0);
+    float fog=clamp((fogBase/0.75)*(0.93+(uAudioSlow.x-0.5)*0.22*uIntensity + (uAudioSlow.w-0.5)*0.06*uIntensity),0.0,1.0);
+    float openness=clamp((openBase/0.75)+(brightness-0.5)*0.10*uIntensity+(uAudioSlow.z-0.5)*0.03*uIntensity - storm*0.04 - night*0.04,0.0,1.0);
     float motion=0.72 + uAudioSlow.y*0.58 + flux*0.10 + activity*0.10 + pulse*0.035;
     float grainState=clamp((grainBase/0.75)*(0.72+uAudioSlow.z*0.68+activity*0.12)*uGrain,0.0,1.9);
 
@@ -147,7 +147,7 @@
     vec3 sunriseSky=mix(vec3(1.00,0.60,0.30),vec3(0.46,0.39,0.54),skyY);
     vec3 sunsetSky=mix(vec3(0.92,0.44,0.30),vec3(0.30,0.25,0.40),skyY);
     vec3 darkSky=mix(vec3(0.28,0.30,0.32),vec3(0.095,0.105,0.112),skyY);
-    vec3 stormSky=mix(vec3(0.09,0.095,0.102),vec3(0.016,0.018,0.022),skyY);
+    vec3 stormSky=mix(vec3(0.105,0.108,0.112),vec3(0.060,0.064,0.070),skyY);
     vec3 nightSky=mix(vec3(0.012,0.015,0.024),vec3(0.0008,0.0012,0.0035),skyY);
 
     vec3 sky=blueSky;
@@ -168,7 +168,7 @@
 
     float sunPresence=clamp(sunrise+sunlight+sunset+darkP*0.18,0.0,1.0)*(1.0-night)*(1.0-storm*0.92);
     float moonPresence=night;
-    vec3 sunColor=mix(vec3(1.00,0.76,0.34),vec3(0.99,0.57,0.31),sunrise*0.90);
+    vec3 sunColor=mix(vec3(1.00,0.78,0.38),vec3(0.99,0.60,0.34),sunrise*0.90);
     sunColor=mix(sunColor,vec3(0.96,0.49,0.30),sunset*0.95);
     vec3 moonColor=vec3(0.58,0.68,0.84);
     sky += moonColor*pow(moonDot,5.0)*moonPresence*0.018;
@@ -183,7 +183,7 @@
     for(int i=0;i<STEPS;i++){
       float dist=(float(i)+0.38)*stepLength;
       vec3 p=ro+rd*dist;
-      vec3 movingP=p+vec3(uTime*0.00178*motion,uTime*0.00050,-uTime*0.00128*motion);
+      vec3 movingP=p+vec3(uTime*0.00185*motion,uTime*0.00052,-uTime*0.00133*motion);
       float dens=cloudDensity(movingP,fog,openness,motion,pulse,activity);
       float farPresence=0.82+smoothstep(76.0,142.0,dist)*0.17;
       float nearSeparation=0.90+smoothstep(18.0,62.0,dist)*0.10;
@@ -198,34 +198,34 @@
       float distanceDepth=clamp(dist/180.0,0.0,1.0);
 
       vec3 dayShadow=vec3(0.16,0.21,0.28);
-      vec3 dayLight=vec3(0.86,0.89,0.90);
+      vec3 dayLight=vec3(0.90,0.92,0.94);
       dayShadow=mix(dayShadow,vec3(0.36,0.22,0.27),sunrise*0.68);
-      dayLight=mix(dayLight,vec3(0.99,0.68,0.42),sunrise*0.92);
+      dayLight=mix(dayLight,vec3(1.00,0.71,0.46),sunrise*0.94);
       dayShadow=mix(dayShadow,vec3(0.22,0.20,0.17),sunlight*0.22);
       dayLight=mix(dayLight,vec3(0.90,0.70,0.34),sunlight*0.64);
       dayShadow=mix(dayShadow,vec3(0.38,0.22,0.24),sunset*0.74);
-      dayLight=mix(dayLight,vec3(0.84,0.50,0.38),sunset*0.86);
+      dayLight=mix(dayLight,vec3(0.90,0.56,0.52),sunset*0.90);
       dayShadow=mix(dayShadow,vec3(0.11,0.115,0.122),darkP);
       dayLight=mix(dayLight,vec3(0.40,0.41,0.43),darkP*0.98);
-      dayShadow=mix(dayShadow,vec3(0.060,0.064,0.070),storm);
-      dayLight=mix(dayLight,vec3(0.18,0.19,0.205),storm);
+      dayShadow=mix(dayShadow,vec3(0.070,0.073,0.078),storm);
+      dayLight=mix(dayLight,vec3(0.155,0.160,0.168),storm);
 
       vec3 nightShadow=vec3(0.004,0.005,0.012);
       vec3 nightLight=vec3(0.048,0.056,0.076);
       vec3 shadow=mix(dayShadow,nightShadow,night);
       vec3 lit=mix(dayLight,nightLight,night);
 
-      float bodyLight=clamp(0.60-interior*0.45-darkP*0.20-storm*0.44-night*0.40-sunset*0.10+ambient*0.07,0.018,0.82);
-      float lightCap = 0.88 - night*0.24 - sunset*0.15 - storm*0.16;
-      bodyLight=clamp(bodyLight+(brightness-0.5)*0.09*uIntensity + (uAudioSlow.z-0.5)*0.05*uIntensity + pulse*0.007 + activity*0.016,0.018,lightCap);
+      float bodyLight=clamp(0.61-interior*0.45-darkP*0.20-storm*0.40-night*0.40-sunset*0.10+ambient*0.07+blue*0.045,0.018,0.84);
+      float lightCap = 0.90 - night*0.24 - sunset*0.12 - storm*0.13;
+      bodyLight=clamp(bodyLight+(brightness-0.5)*0.06*uIntensity + (uAudioSlow.z-0.5)*0.035*uIntensity + pulse*0.004 + activity*0.012,0.018,lightCap);
       vec3 cloud=mix(shadow,lit,bodyLight);
       float greyVar = noise3(movingP*0.020 + vec3(9.0, 3.0, 6.0));
       vec3 rainGrey = mix(vec3(0.17,0.18,0.19), vec3(0.53,0.53,0.54), greyVar);
-      cloud = mix(cloud, rainGrey, (darkP*0.30 + storm*0.18) * (0.40 + 0.60*dens));
-      vec3 moodTint = sunriseSky*(sunrise*0.38) + sunsetSky*(sunset*0.44) + darkSky*(darkP*0.30) + stormSky*(storm*0.40) + nightSky*(night*0.42);
-      float tintAmt = clamp(sunrise*0.16 + sunset*0.28 + darkP*0.20 + storm*0.20 + night*0.24, 0.0, 0.40);
+      cloud = mix(cloud, rainGrey, (darkP*0.34 + storm*0.16) * (0.44 + 0.56*dens));
+      vec3 moodTint = sunriseSky*(sunrise*0.42) + sunsetSky*(sunset*0.50) + darkSky*(darkP*0.34) + stormSky*(storm*0.30) + nightSky*(night*0.42);
+      float tintAmt = clamp(sunrise*0.20 + sunset*0.32 + darkP*0.23 + storm*0.14 + night*0.24, 0.0, 0.42);
       cloud = mix(cloud, mix(cloud, moodTint, 0.64), tintAmt * (0.60 + 0.40*dens));
-      vec3 atmosphericCloud=mix(cloud,vec3(0.50,0.53,0.57),distanceDepth*0.08*(1.0-storm*0.9)*(1.0-night));
+      vec3 atmosphericCloud=mix(cloud,vec3(0.50,0.53,0.57),distanceDepth*0.07*(1.0-storm*0.94)*(1.0-night));
       cloud=mix(cloud,atmosphericCloud,distanceDepth*(0.42-darkP*0.14-storm*0.22-night*0.12));
       cloud+=lit*edge*(0.34+uAudioSlow.z*0.18*uIntensity + pulse*0.030);
       cloud+=shadow*exitEdge*(0.10+bass*0.08);
@@ -240,13 +240,15 @@
 
       float sunFacing=sunDot*sunDot;
       float sunEdge=edge*(0.10+sunFacing*0.72)*sunPresence;
-      float sunInteriorGlow=(1.0-interior)*pow(sunDot,4.0)*sunPresence*(0.014 + sunrise*0.006);
-      float sunlightBounce=sunlight*(0.24+sunFacing*0.62)*(1.0-interior)*(0.52+edge*1.85) + sunrise*(0.08+sunFacing*0.12)*(1.0-interior)*(0.34+edge*1.40);
+      float sunInteriorGlow=(1.0-interior)*pow(sunDot,4.0)*sunPresence*(0.013 + sunrise*0.008 + sunset*0.003);
+      float sunlightBounce=sunlight*(0.24+sunFacing*0.62)*(1.0-interior)*(0.52+edge*1.85) + sunrise*(0.10+sunFacing*0.16)*(1.0-interior)*(0.38+edge*1.52);
       float musicSun=0.92+brightness*0.24+uAudioSlow.z*0.15+pulse*0.018;
       cloud+=sunColor*(sunEdge*(0.34+sunlight*0.32+sunrise*0.16)+sunInteriorGlow+sunlightBounce*0.18)*musicSun*(1.0 - sunset*0.08 - night*0.50);
 
-      vec3 warmSceneEdgeTint = mix(sunriseSky, sunsetSky, sunset/(sunrise+sunset+0.0001));
-      cloud += warmSceneEdgeTint * edge * (sunrise*0.05 + sunset*0.07) * (0.75 + 0.25*dens);
+      vec3 sunriseEdgeTint = vec3(1.00,0.62,0.34);
+      vec3 sunsetEdgeTint = vec3(0.98,0.60,0.72);
+      cloud += sunriseEdgeTint * edge * sunrise * 0.075 * (0.72 + 0.28*dens);
+      cloud += sunsetEdgeTint * edge * sunset * 0.082 * (0.72 + 0.28*dens);
 
       float moonFacing=moonDot*moonDot;
       float moonEdge=edge*(0.12+moonFacing*1.30)*moonPresence;
@@ -263,17 +265,22 @@
     vec3 base=accum+sky*trans;
     base+=moonColor*pow(moonDot,4.0)*moonPresence*0.018;
 
-    float fineGrain=noise2(uv*360.0+vec2(uTime*0.11,-uTime*0.08)+uSeed)-0.5;
-    float microGrain=hash21(floor(uv*vec2(760.0,1340.0))+floor(uTime*10.0)+uSeed*17.0)-0.5;
-    float dotNoise=step(0.970,hash21(floor(uv*vec2(620.0,1100.0))+floor(uTime*12.0)+uSeed*31.0));
+    vec2 grainUV1=vec2(uv.x*431.7+uv.y*163.1, uv.x*-247.3+uv.y*389.4);
+    vec2 grainUV2=vec2(uv.x*911.2-uv.y*507.6, uv.x*281.5+uv.y*769.8);
+    float fineGrain=noise2(grainUV1+vec2(uTime*0.13,-uTime*0.09)+uSeed*1.7)-0.5;
+    float microGrain=noise2(grainUV2+vec2(-uTime*0.41,uTime*0.33)+uSeed*4.1)-0.5;
+    float dotNoise=smoothstep(0.84,1.0,noise2(grainUV2*1.73+vec2(uTime*0.71,-uTime*0.57)+uSeed*7.3));
     float cloudImmersion=1.0-trans;
-    float grainEnvelope=grainState*(0.26+cloudImmersion*0.74)*(0.80+uAudioSlow.z*0.34+activity*0.08);
-    base+=fineGrain*grainEnvelope*0.032;
-    base+=microGrain*grainEnvelope*0.013;
-    base+=dotNoise*grainEnvelope*0.018;
+    float grainEnvelope=grainState*(0.24+cloudImmersion*0.76)*(0.82+uAudioSlow.z*0.30+activity*0.06);
+    base+=fineGrain*grainEnvelope*0.028;
+    base+=microGrain*grainEnvelope*0.017;
+    base+=dotNoise*grainEnvelope*0.010;
 
     base=mix(base,vec3(0.61,0.64,0.66),mist*cloudImmersion*0.070);
+    base=mix(base,vec3(0.20,0.21,0.22),storm*(1.0-cloudImmersion)*0.020);
     base=mix(base, vec3(0.13,0.14,0.17), night*cloudImmersion*0.040);
+    float skyDither=(noise2(uv*vec2(503.0,337.0)+vec2(uTime*0.07,-uTime*0.05)+uSeed*2.3)-0.5);
+    base += vec3(skyDither) * (storm*0.008 + sunrise*0.003 + sunset*0.003) * (0.75 - cloudImmersion*0.30);
     fragColor=vec4(clamp(base,0.0,1.0),1.0);
   }
   `;
