@@ -472,6 +472,7 @@
     nextDecision=transitionStart+12;
     camera.x=0; camera.y=0; camera.z=0; travel=0; yaw=0; pitch=0;
     calibrated = false;
+    previewInitialized = false;
     Object.assign(A, {
       bass:.5, mid:.5, high:.5, overall:.5, brightness:.5, flux:.0, pulse:.0, activity:.0,
       slowBass:.5, slowMid:.5, slowHigh:.5, slowOverall:.5,
@@ -534,25 +535,33 @@
   let last=performance.now()/1000;
   let hasStarted = false;
   let frozenTime = 0;
+  let previewInitialized = false;
+  function ensurePreviewFrame() {
+    if (previewInitialized) return;
+    const startScene = manualScene === null ? 1 : manualScene;
+    sceneWeights.fill(0);
+    sceneWeights[startScene] = 1;
+    currentScene = startScene;
+    targetScene = startScene;
+    camera.x = 0; camera.y = 0; camera.z = 0;
+    yaw = 0.16;
+    pitch = 0.02;
+    previewInitialized = true;
+  }
   function frame(ms) {
     const now=ms/1000;
     let dt=Math.min(.05,Math.max(.001,now-last)); last=now;
     resize();
-    const playing = audioReady && !audio.paused && !audio.ended;
+    const playing = audioReady && !audio.paused && !audio.ended && hasStarted;
     if (playing) {
       analyseAudio(dt);
       updateScenes(now,dt);
       frozenTime = isFinite(audio.currentTime) ? audio.currentTime : frozenTime + dt;
       updateCamera(frozenTime,dt);
+    } else {
+      ensurePreviewFrame();
     }
     const t = hasStarted ? frozenTime : 0.0;
-
-    if (!hasStarted) {
-      gl.clearColor(0.02,0.027,0.043,1.0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      requestAnimationFrame(frame);
-      return;
-    }
 
     const look=[Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch)];
     gl.useProgram(program);
@@ -607,6 +616,7 @@
     audio.src=objectURL;
     hasStarted = false;
     frozenTime = 0;
+    previewInitialized = false;
     fileName.textContent=f.name;
     playBtn.disabled=false;
     seek.disabled=false;
@@ -641,9 +651,19 @@
   shuffleBtn.addEventListener('click',resetJourney);
   fullBtn.addEventListener('click',async()=>{
     try {
-      if(!document.fullscreenElement) await document.documentElement.requestFullscreen();
-      else await document.exitFullscreen();
-    } catch(e) { console.warn(e); }
+      const root = document.documentElement;
+      const request = root.requestFullscreen || root.webkitRequestFullscreen;
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if(!document.fullscreenElement && request){
+        await request.call(root);
+      } else if (document.fullscreenElement && exit) {
+        await exit.call(document);
+      }
+      window.scrollTo(0,0);
+    } catch(e) {
+      window.scrollTo(0,0);
+      console.warn(e);
+    }
   });
 
   let hideTimer=null;
