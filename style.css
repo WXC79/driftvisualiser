@@ -14,6 +14,7 @@ body { touch-action: manipulation; }
 .ui { position:fixed; inset:0; display:grid; place-items:center; padding:max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom)); transition:opacity .55s ease; }
 .ui:not(.visible) { opacity:0; pointer-events:none; }
 .panel {
+  position:relative;
   width:min(560px, 100%); padding:22px 22px 18px;
   background:linear-gradient(180deg, rgba(4,6,10,.66), rgba(4,6,10,.42));
   border:1px solid rgba(255,255,255,.11); border-radius:22px;
@@ -70,3 +71,11 @@ input[type="range"] { width:100%; accent-color:#e8ebee; }
   letter-spacing: .06em;
 }
 .sceneModeRow select option { color: #111; background: #eee; }
+
+.closeUiBtn {
+  position:absolute; top:12px; right:12px; width:34px; height:34px;
+  border-radius:10px; border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06); color:rgba(255,255,255,.76);
+  font-size:24px; line-height:28px; cursor:pointer; padding:0;
+}
+.closeUiBtn:hover { background:rgba(255,255,255,.13); color:#fff; }

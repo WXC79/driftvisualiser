@@ -19,6 +19,7 @@
   const speedSlider = document.getElementById('speed');
   const grainSlider = document.getElementById('grain');
   const sceneMode = document.getElementById('sceneMode');
+  const closeUiBtn = document.getElementById('closeUiBtn');
 
   const gl = canvas.getContext('webgl2', {
     antialias: false,
@@ -94,11 +95,12 @@
     float detail=noise3(pp*0.0375+vec3(13.0+uSeed.y*0.03,-7.0,5.0+uSeed.x*0.02));
     float field=large*0.68+body*0.24+detail*0.08;
     float threshold=0.534+openness*0.12-fog*0.11;
-    threshold -= (uAudioSlow.x-0.5)*0.055*uIntensity;
-    threshold -= pulse*0.015 + activity*0.012;
+    threshold -= (uAudioSlow.x-0.5)*0.092*uIntensity;
+    threshold -= (uAudioSlow.y-0.5)*0.028*uIntensity;
+    threshold -= activity*0.006;
     float d=smoothstep(threshold,threshold+0.11,field);
     d=pow(d,1.14);
-    d *= 0.92 + uAudio0.w*0.10 + activity*0.08;
+    d *= 0.92 + uAudioSlow.w*0.15 + activity*0.035;
     float altitude=0.88+0.12*sin(p.y*0.008+uSeed.x);
     return clamp(d*altitude,0.0,1.0);
   }
@@ -121,10 +123,10 @@
     float grainBase=sunrise*0.026+blue*0.022+sunlight*0.030+mist*0.29+darkP*0.060+storm*0.125+sunset*0.030+night*0.062;
     float ambient=sunrise*0.73+blue*0.76+sunlight*0.76+mist*0.45+darkP*0.22+storm*0.085+sunset*0.70+night*0.045;
 
-    float fog=clamp((fogBase/0.75)*(0.92+(bass-0.5)*0.24*uIntensity + activity*0.10),0.0,1.0);
-    float openness=clamp((openBase/0.75)+(brightness-0.5)*0.14*uIntensity-pulse*0.04+bass*0.03,0.0,1.0);
-    float motion=0.72 + mids*0.46 + flux*0.28 + pulse*0.20 + activity*0.22;
-    float grainState=clamp((grainBase/0.75)*(0.76+highs*0.55+activity*0.25)*uGrain,0.0,1.9);
+    float fog=clamp((fogBase/0.75)*(0.91+(uAudioSlow.x-0.5)*0.34*uIntensity + (uAudioSlow.w-0.5)*0.10*uIntensity),0.0,1.0);
+    float openness=clamp((openBase/0.75)+(brightness-0.5)*0.19*uIntensity+(uAudioSlow.z-0.5)*0.07*uIntensity,0.0,1.0);
+    float motion=0.72 + uAudioSlow.y*0.58 + flux*0.10 + activity*0.10 + pulse*0.035;
+    float grainState=clamp((grainBase/0.75)*(0.72+uAudioSlow.z*0.68+activity*0.12)*uGrain,0.0,1.9);
 
     vec3 forward=normalize(uLook);
     vec3 worldUp=vec3(0,1,0);
@@ -142,11 +144,11 @@
     vec3 nightSky=mix(vec3(0.028,0.035,0.060),vec3(0.003,0.004,0.012),skyY);
 
     vec3 sky=blueSky;
-    sky=mix(sky,sunriseSky,sunrise*0.94*uIntensity);
-    sky=mix(sky,darkSky,darkP*0.86*uIntensity);
-    sky=mix(sky,stormSky,storm*0.96*uIntensity);
-    sky=mix(sky,sunsetSky,sunset*0.96*uIntensity);
-    sky=mix(sky,nightSky,night*0.985*uIntensity);
+    sky=mix(sky,sunriseSky,sunrise*0.94);
+    sky=mix(sky,darkSky,darkP*0.86);
+    sky=mix(sky,stormSky,storm*0.96);
+    sky=mix(sky,sunsetSky,sunset*0.96);
+    sky=mix(sky,nightSky,night*0.985);
 
     float sunAz=uTime*0.055+uSeed.x;
     float sunEl=0.16+0.30*sin(uTime*0.037+uSeed.y);
@@ -179,7 +181,7 @@
       float farPresence=0.82+smoothstep(76.0,142.0,dist)*0.17;
       float nearSeparation=0.90+smoothstep(18.0,62.0,dist)*0.10;
       dens*=farPresence*nearSeparation;
-      dens*=0.90+darkP*0.22+storm*0.42+mist*0.16 + bass*0.08 + activity*0.05;
+      dens*=0.90+darkP*0.22+storm*0.42+mist*0.16 + (uAudioSlow.x-0.5)*0.10*uIntensity + activity*0.018;
       dens*=1.0-smoothstep(142.0,182.0,dist);
       dens=clamp(dens,0.0,1.0);
 
@@ -207,11 +209,11 @@
       vec3 lit=mix(dayLight,nightLight,night);
 
       float bodyLight=clamp(0.60-interior*0.45-darkP*0.25-storm*0.45-night*0.34+ambient*0.07,0.018,0.80);
-      bodyLight=clamp(bodyLight+(brightness-0.5)*0.09*uIntensity + pulse*0.04 + activity*0.05,0.018,0.88);
+      bodyLight=clamp(bodyLight+(brightness-0.5)*0.12*uIntensity + (uAudioSlow.z-0.5)*0.07*uIntensity + pulse*0.012 + activity*0.025,0.018,0.88);
       vec3 cloud=mix(shadow,lit,bodyLight);
       vec3 atmosphericCloud=mix(cloud,vec3(0.50,0.54,0.58),distanceDepth*0.12*(1.0-storm)*(1.0-night));
       cloud=mix(cloud,atmosphericCloud,distanceDepth*0.55);
-      cloud+=lit*edge*(0.36+highs*0.16*uIntensity + pulse*0.12);
+      cloud+=lit*edge*(0.36+uAudioSlow.z*0.20*uIntensity + pulse*0.035);
       cloud+=shadow*exitEdge*(0.10+bass*0.08);
 
       float flashA=pow(max(0.0,sin(uTime*0.73+2.1)),72.0);
@@ -226,7 +228,7 @@
       float sunEdge=edge*(0.10+sunFacing*0.72)*sunPresence;
       float sunInteriorGlow=(1.0-interior)*pow(sunDot,4.0)*sunPresence*0.014;
       float sunlightBounce=sunlight*(0.24+sunFacing*0.62)*(1.0-interior)*(0.52+edge*1.85);
-      float musicSun=0.92+brightness*0.20+highs*0.12+pulse*0.06;
+      float musicSun=0.92+brightness*0.24+uAudioSlow.z*0.15+pulse*0.018;
       cloud+=sunColor*(sunEdge*(0.40+sunlight*0.38)+sunInteriorGlow+sunlightBounce*0.26)*musicSun;
 
       float moonFacing=moonDot*moonDot;
@@ -248,7 +250,7 @@
     float microGrain=hash21(floor(uv*vec2(760.0,1340.0))+floor(uTime*10.0)+uSeed*17.0)-0.5;
     float dotNoise=step(0.970,hash21(floor(uv*vec2(620.0,1100.0))+floor(uTime*12.0)+uSeed*31.0));
     float cloudImmersion=1.0-trans;
-    float grainEnvelope=grainState*(0.26+cloudImmersion*0.74)*(0.80+highs*0.30+activity*0.18);
+    float grainEnvelope=grainState*(0.26+cloudImmersion*0.74)*(0.80+uAudioSlow.z*0.34+activity*0.08);
     base+=fineGrain*grainEnvelope*0.032;
     base+=microGrain*grainEnvelope*0.013;
     base+=dotNoise*grainEnvelope*0.018;
@@ -309,7 +311,7 @@
   let timeDomain = null;
   let audioReady = false;
 
-  const CALIBRATION_SECONDS = 12;
+  const CALIBRATION_SECONDS = 14;
   let calibrated = false;
 
   const A = {
@@ -388,30 +390,31 @@
     const fluxBaseRate = calibrated ? 0.14 : 0.70;
     const fluxDevRate = calibrated ? 0.20 : 0.95;
 
-    const bass=adaptiveMetric(rb,'baseBass','devBass',dt,baseRate,devRate,2.7);
-    const mid=adaptiveMetric(rm,'baseMid','devMid',dt,baseRate,devRate,2.8);
-    const high=adaptiveMetric(rh,'baseHigh','devHigh',dt,baseRate,devRate,2.8);
-    const overall=adaptiveMetric(rms,'baseOverall','devOverall',dt,baseRate,devRate,2.8);
-    const bright=adaptiveMetric(centroid,'baseBright','devBright',dt,baseRate*0.9,devRate*0.9,2.6);
-    const fluxMetric=adaptiveMetric(flux,'baseFlux','devFlux',dt,fluxBaseRate,fluxDevRate,2.4);
+    const bass=adaptiveMetric(rb,'baseBass','devBass',dt,baseRate,devRate,1.85);
+    const mid=adaptiveMetric(rm,'baseMid','devMid',dt,baseRate,devRate,1.90);
+    const high=adaptiveMetric(rh,'baseHigh','devHigh',dt,baseRate,devRate,1.90);
+    const overall=adaptiveMetric(rms,'baseOverall','devOverall',dt,baseRate,devRate,2.05);
+    const bright=adaptiveMetric(centroid,'baseBright','devBright',dt,baseRate*0.9,devRate*0.9,1.80);
+    const fluxMetric=adaptiveMetric(flux,'baseFlux','devFlux',dt,fluxBaseRate,fluxDevRate,2.90);
 
-    const lowPunch = clamp01((bass - A.slowBass) * 2.0 + fluxMetric*0.20);
-    const transient = clamp01((overall - A.slowOverall) * 2.2 + fluxMetric*0.45 + lowPunch*0.35);
-    const activityTarget = clamp01(overall*0.35 + fluxMetric*0.35 + transient*0.18 + mid*0.12);
+    const lowPunch = clamp01((bass - A.slowBass) * 1.15 + fluxMetric*0.08);
+    const transient = clamp01((overall - A.slowOverall) * 1.20 + fluxMetric*0.16 + lowPunch*0.12);
+    const tonalMovement = clamp01(Math.abs(bass-A.slowBass)*0.95 + Math.abs(mid-A.slowMid)*1.10 + Math.abs(high-A.slowHigh)*1.05);
+    const activityTarget = clamp01(A.slowOverall*0.20 + mid*0.20 + high*0.12 + tonalMovement*0.36 + fluxMetric*0.08 + transient*0.04);
 
-    A.pulse=expSmooth(A.pulse, transient, 8.0, dt);
+    A.pulse=expSmooth(A.pulse, transient, 3.0, dt);
     A.bass=expSmooth(A.bass,bass,5.2,dt);
     A.mid=expSmooth(A.mid,mid,4.7,dt);
     A.high=expSmooth(A.high,high,5.0,dt);
     A.overall=expSmooth(A.overall,overall,4.2,dt);
     A.brightness=expSmooth(A.brightness,bright,3.6,dt);
-    A.flux=expSmooth(A.flux,fluxMetric,4.0,dt);
-    A.activity=expSmooth(A.activity,activityTarget,3.3,dt);
+    A.flux=expSmooth(A.flux,fluxMetric,2.1,dt);
+    A.activity=expSmooth(A.activity,activityTarget,1.7,dt);
 
-    A.slowBass=expSmooth(A.slowBass,A.bass,0.34,dt);
-    A.slowMid=expSmooth(A.slowMid,A.mid,0.31,dt);
-    A.slowHigh=expSmooth(A.slowHigh,A.high,0.34,dt);
-    A.slowOverall=expSmooth(A.slowOverall,A.overall,0.28,dt);
+    A.slowBass=expSmooth(A.slowBass,A.bass,0.22,dt);
+    A.slowMid=expSmooth(A.slowMid,A.mid,0.20,dt);
+    A.slowHigh=expSmooth(A.slowHigh,A.high,0.22,dt);
+    A.slowOverall=expSmooth(A.slowOverall,A.overall,0.18,dt);
 
     if (!calibrated) {
       statusEl.textContent = `Calibrating ${Math.max(0, Math.ceil(CALIBRATION_SECONDS - audio.currentTime))}s`;
@@ -502,9 +505,9 @@
   let yaw=0,pitch=0,travel=0;
 
   function updateCamera(t,dt) {
-    const desiredYaw=Math.sin(t*0.033+seed[0])*0.44+Math.sin(t*0.011+seed[1])*0.28 + (A.pulse-0.5)*0.10;
+    const desiredYaw=Math.sin(t*0.033+seed[0])*0.44+Math.sin(t*0.011+seed[1])*0.28 + (A.slowMid-0.5)*0.07;
     yaw=expSmooth(yaw,desiredYaw,0.26 + A.activity*0.15,dt);
-    const speedBase=(11.8 + A.slowMid*2.2 + A.slowHigh*0.5 + A.slowOverall*1.1 + A.activity*1.4 + A.pulse*0.7) * 1.15;
+    const speedBase=(11.8 + A.slowMid*3.0 + A.slowHigh*0.7 + A.slowOverall*1.4 + A.activity*0.75 + A.pulse*0.12) * 1.15;
     const speed=speedBase*parseFloat(speedSlider.value);
     const direction=yaw+Math.sin(t*0.047+seed[1])*0.10;
     const lateral=(Math.sin(t*0.071+seed[0])*0.70+Math.sin(t*0.023+seed[1])*0.30)*(0.78 + A.activity*0.28);
@@ -514,7 +517,7 @@
     const desiredY=Math.sin(t*0.037+seed[1])*12+Math.sin(t*0.081+seed[0])*4.8+Math.sin(travel*0.010)*7 + (A.activity-0.5)*5;
     camera.y=expSmooth(camera.y,desiredY,0.13 + A.activity*0.05,dt);
     const fogMood=sceneWeights[3]*0.58+sceneWeights[4]*0.54+sceneWeights[5]*0.66+sceneWeights[7]*0.39;
-    const desiredPitch=Math.sin(t*0.043+seed[1])*0.12+(.5-fogMood)*0.06 + (A.pulse-0.5)*0.03;
+    const desiredPitch=Math.sin(t*0.043+seed[1])*0.12+(.5-fogMood)*0.06 + (A.slowHigh-0.5)*0.025;
     pitch=expSmooth(pitch,desiredPitch,0.14 + A.activity*0.03,dt);
   }
 
@@ -529,14 +532,27 @@
   window.addEventListener('resize',resize,{passive:true});
 
   let last=performance.now()/1000;
+  let hasStarted = false;
+  let frozenTime = 0;
   function frame(ms) {
     const now=ms/1000;
     let dt=Math.min(.05,Math.max(.001,now-last)); last=now;
     resize();
-    analyseAudio(dt);
-    updateScenes(now,dt);
-    const t=audioReady && isFinite(audio.currentTime) ? audio.currentTime : now;
-    updateCamera(t,dt);
+    const playing = audioReady && !audio.paused && !audio.ended;
+    if (playing) {
+      analyseAudio(dt);
+      updateScenes(now,dt);
+      frozenTime = isFinite(audio.currentTime) ? audio.currentTime : frozenTime + dt;
+      updateCamera(frozenTime,dt);
+    }
+    const t = hasStarted ? frozenTime : 0.0;
+
+    if (!hasStarted) {
+      gl.clearColor(0.02,0.027,0.043,1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      requestAnimationFrame(frame);
+      return;
+    }
 
     const look=[Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch)];
     gl.useProgram(program);
@@ -579,6 +595,7 @@
 
   async function startPlayback(){
     ensureAudioGraph();
+    hasStarted = true;
     if(audioCtx.state==='suspended') await audioCtx.resume();
     try { await audio.play(); } catch(e) { console.warn(e); }
   }
@@ -588,6 +605,8 @@
     if(objectURL) URL.revokeObjectURL(objectURL);
     objectURL=URL.createObjectURL(f);
     audio.src=objectURL;
+    hasStarted = false;
+    frozenTime = 0;
     fileName.textContent=f.name;
     playBtn.disabled=false;
     seek.disabled=false;
@@ -605,7 +624,7 @@
   loopBtn.addEventListener('click',()=>{
     audio.loop=!audio.loop; loopBtn.setAttribute('aria-pressed',audio.loop?'true':'false');
   });
-  seek.addEventListener('input',()=>{ if(isFinite(audio.duration)) audio.currentTime=parseFloat(seek.value); });
+  seek.addEventListener('input',()=>{ if(isFinite(audio.duration)){ audio.currentTime=parseFloat(seek.value); if(hasStarted) frozenTime=audio.currentTime; } });
   sceneMode.addEventListener('change',()=>{
     manualScene = sceneMode.value === 'auto' ? null : Number(sceneMode.value);
     const now = performance.now()/1000;
@@ -628,18 +647,27 @@
   });
 
   let hideTimer=null;
+  function scheduleUiHide(){
+    clearTimeout(hideTimer);
+    hideTimer=setTimeout(()=>ui.classList.remove('visible'),6000);
+  }
   function showUI(){
     ui.classList.add('visible');
-    clearTimeout(hideTimer);
-    if(!audio.paused) hideTimer=setTimeout(()=>ui.classList.remove('visible'),5500);
+    scheduleUiHide();
   }
+  function hideUI(){
+    clearTimeout(hideTimer);
+    ui.classList.remove('visible');
+  }
+  closeUiBtn.addEventListener('click',e=>{ e.stopPropagation(); hideUI(); });
   document.addEventListener('pointermove',showUI,{passive:true});
   document.addEventListener('pointerdown',e=>{
-    if(e.target===canvas || e.target.id==='vignette'){
-      ui.classList.toggle('visible');
-      if(ui.classList.contains('visible')) showUI();
-    }
+    if(e.target===canvas || e.target.id==='vignette') showUI();
   },{passive:true});
+  ui.addEventListener('pointerdown',scheduleUiHide,{passive:true});
+  ui.addEventListener('input',scheduleUiHide,{passive:true});
   audio.addEventListener('play',showUI);
   resetJourney();
+  statusEl.textContent='Waiting for music';
+  showUI();
 })();
