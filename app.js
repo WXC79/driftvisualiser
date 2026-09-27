@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '13.5';
+  const DRIFT_BUILD = '13.6';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -386,7 +386,7 @@
   let seed = [Math.random()*100, Math.random()*100];
   const transitionFrom = new Float32Array(8);
 
-  const SHOWCASE_SRC = './the-cloud-chris-weeks.m4a';
+  const SHOWCASE_SRC = './the-cloud-chris-weeks.mp3';
   const SHOWCASE_LABEL = 'The Cloud — Chris Weeks';
   let usingShowcaseTrack = true;
   let objectURL = null;
@@ -798,14 +798,29 @@
 
   async function startPlayback(){
     ensureAudioGraph();
-    hasStarted = true;
+    hasStarted=true;
     backgroundGuarded=false;
     audio.muted=false;
-    if(audioCtx.state==='suspended') await audioCtx.resume();
+
+    // On iOS, initiate media playback immediately in the user's tap gesture.
+    // Awaiting AudioContext.resume() first can consume the transient user activation
+    // and cause the subsequent audio.play() to be rejected.
+    let playPromise;
     try {
-      await audio.play();
+      if(usingShowcaseTrack && (!audio.src || audio.error)){
+        audio.src=SHOWCASE_SRC;
+        audio.load();
+      }
+      playPromise=audio.play();
+      const resumePromise=(audioCtx && audioCtx.state==='suspended') ? audioCtx.resume() : Promise.resolve();
+      await Promise.all([playPromise, resumePromise]);
+      syncTransportState();
       await requestScreenWakeLock();
-    } catch(e) { console.warn(e); }
+    } catch(e) {
+      console.warn('Playback failed',e);
+      syncTransportState();
+      statusEl.textContent='Playback failed — tap Play again';
+    }
   }
 
   fileInput.addEventListener('change', e => {
@@ -920,8 +935,13 @@
   });
 
   let hideTimer=null;
+  let initialMenuPinned=true;
+
   function scheduleUiHide(){
     clearTimeout(hideTimer);
+    // On first launch the controls stay up indefinitely. The user dismisses them
+    // with the X or by tapping outside the panel. After that, normal auto-hide resumes.
+    if(initialMenuPinned) return;
     hideTimer=setTimeout(()=>ui.classList.remove('visible'),6000);
   }
   function showUI(){
@@ -930,6 +950,7 @@
   }
   function hideUI(){
     clearTimeout(hideTimer);
+    initialMenuPinned=false;
     ui.classList.remove('visible');
   }
   closeUiBtn.addEventListener('click',e=>{ e.stopPropagation(); hideUI(); });
@@ -981,6 +1002,7 @@
   playBtn.disabled=false;
   seek.disabled=false;
   if(!audio.getAttribute('src')) audio.src=SHOWCASE_SRC;
+  audio.load();
   resetJourney();
   statusEl.textContent='Showcase ready — press play';
   showUI();

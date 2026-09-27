@@ -1,13 +1,31 @@
-# DRIFT 13.5 — Higher-Quality Showcase Track
+# DRIFT 13.6 — Showcase MP3 + Pinned Initial Menu
 
-Built from the stable no-touch 13.3 showcase build.
+Built from the no-touch version 13 line.
 
 Showcase audio:
 - The Cloud — Chris Weeks
-- AAC-LC / M4A at 160 kbps
-- materially higher quality than the 96 kbps MP3 test
-- still keeps the complete GitHub upload below 25 MB
+- real MP3 at 128 kbps
+- bundled file is about 18.7 MB, keeping the full GitHub package below 25 MB
 - no autoplay
-- user-selected audio immediately replaces the showcase for the session
+- user audio immediately replaces the showcase for the current session
 
-All DRIFT visual, fullscreen, transport, Night, and background-audio fixes are preserved.
+Playback fix:
+- on iPhone/iOS, audio.play() is initiated immediately inside the Play-button gesture
+- AudioContext resume happens alongside playback rather than before it
+- this avoids losing iOS user activation while waiting for the audio context
+- showcase audio is explicitly loaded on startup
+
+Initial menu behavior:
+- the menu no longer auto-hides when DRIFT first opens
+- it remains visible indefinitely until the user presses X or taps outside the panel
+- after that first dismissal, the existing normal auto-hide behavior resumes
+- double-tap still toggles the controls
+
+Preserved:
+- no touch-cloud system
+- Night fix
+- portrait fullscreen workaround
+- transport-state fixes
+- background-audio return guard
+- sustained-rhythm response
+- current icon/logo
