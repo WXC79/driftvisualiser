@@ -10,8 +10,8 @@
   <meta name="apple-mobile-web-app-title" content="DRIFT" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
-  <meta name="description" content="DRIFT 12.11.17 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
-  <title>DRIFT 12.11.17 — Generative Music Visualiser</title>
+  <meta name="description" content="DRIFT 13.0 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
+  <title>DRIFT 13.0 — Generative Music Visualiser</title>
   <script>
     (function(){
       function standalone(){
@@ -41,7 +41,7 @@
       });
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=12.11.17" />
+  <link rel="stylesheet" href="style.css?v=13.0" />
 </head>
 <body>
   <canvas id="gl"></canvas>
@@ -50,7 +50,7 @@
   <main id="ui" class="ui visible">
     <section class="panel" id="landing">
       <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
-      <div class="brand">DRIFT 12.11.17</div>
+      <div class="brand">DRIFT 13.0</div>
       <h1>GENERATIVE CLOUD VISUALISER</h1>
       <p class="lede">Choose music from your device. The file stays local: nothing is uploaded.</p>
 
@@ -104,12 +104,12 @@
         <span id="status">Waiting for music</span>
         <span id="scene">BLUE SKY</span>
       </div>
-      <p class="hint"><strong>Double-tap the visual to toggle controls.</strong><br>Music shapes Drift gradually rather than triggering beat-by-beat flashes. 12.11.17 keeps the locked scene design and portrait fullscreen workaround.</p>
+      <p class="hint"><strong>Double-tap the visual to toggle controls.</strong><br>Press and hold on the visual to gather cloud. Drag while holding to sculpt it into the world.</p>
     </section>
   </main>
 
   <audio id="audio" preload="metadata"></audio>
-  <script src="app.js?v=12.11.17"></script>
+  <script src="app.js?v=13.0"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));

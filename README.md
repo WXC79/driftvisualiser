@@ -1,23 +1,33 @@
-# DRIFT 12.11.17 — UI + Audio Polish, No Touch
+# DRIFT 13.0 — Touch Clouds
 
-Built directly from 12.11.16. Touch-cloud interaction is deliberately NOT included.
+Built from 12.11.17.
 
 Preserved:
-- locked 12.11.15 scene design
 - 12.11.16 portrait fullscreen workaround
-- current scene timing / pacing
-- wake lock / PWA behavior
+- current logo/icon assets
+- boutique cloud Play/Pause control
+- sustained-rhythm audio response
+- existing scene timing and camera pacing
 
-New:
-- clear bottom-of-menu instruction: “Double-tap the visual to toggle controls.”
-- boutique cloud-shaped Play/Pause control:
-  - paused = white cloud + dark play triangle
-  - playing = grey cloud + white pause bars
-- a clean vector SVG master of the current DRIFT D/cloud logo
-- freshly exported 180 / 192 / 512 / 1024 PNG icon assets from the cleaned geometry
-- subtle sustained-rhythm response:
-  - repeated beats / rhythmic motion gradually increase overall movement and activity
-  - individual beats still do NOT make the visual jump or flash
-  - rhythmic energy builds and releases slowly, so ambient/drone remains the core tuning
+13.0 changes:
 
-Touch implementation remains held back for a later branch.
+## Night
+- much flatter near-black / dark-blue background
+- reduced broad contour-band appearance
+- narrower, more local moon haze
+- retained intermittent moonlit cloud edges and bursts
+
+## Touch
+- quick double-tap toggles controls
+- press-and-hold (~280 ms) starts as a very faint local wisp
+- continued hold slowly gathers density and expands with no short artificial size ceiling
+- dragging moves the source through the scene and lays a soft overlapping trail
+- released clouds remain in world space, so normal camera travel can approach and pass through them
+- touch density is injected into the existing volumetric noise field rather than drawn as a 2D cloud sprite
+- iOS long-press selection / Copy-Look Up menu is suppressed
+
+## Background audio
+- when DRIFT is hidden, audio is muted before pause and the AudioContext is suspended
+- returning to DRIFT does not auto-unmute or auto-resume
+- only an explicit Play tap re-enables audio
+- intended to eliminate the brief old-audio burst seen when returning to the app

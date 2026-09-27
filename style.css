@@ -14,7 +14,12 @@ html, body {
   overflow:hidden;
   background:#05070b;
 }
-body { touch-action: manipulation; }
+body {
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
 #gl {
   position:fixed;
   top:0;
@@ -244,4 +249,15 @@ input[type="range"] { width:100%; accent-color:#e8ebee; }
   color: rgba(255,255,255,.58);
   font-weight: 500;
   letter-spacing: .03em;
+}
+
+
+/* 13.0 — suppress iOS selection/callout during long-hold cloud interaction */
+html, body, #gl, #vignette, .ui, .panel, button, label {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+#gl {
+  touch-action: none;
 }
