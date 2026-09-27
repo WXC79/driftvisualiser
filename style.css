@@ -15,7 +15,7 @@ html, body {
   background:#05070b;
 }
 body {
-  touch-action: none;
+  touch-action: manipulation;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
@@ -259,23 +259,7 @@ html, body, #gl, #vignette, .ui, .panel, button, label {
   user-select: none;
 }
 #gl {
-  touch-action: none;
+  touch-action: manipulation;
 }
 
 
-/* 13.1 — touch-cloud switch */
-.toggleRow input[type="checkbox"] {
-  justify-self: end;
-  width: 42px;
-  height: 24px;
-  accent-color: #e9edf1;
-}
-
-/* Keep the visual surface reliably touchable even while the menu is visible.
-   The panel itself remains interactive and excluded by JS. */
-.ui {
-  touch-action: none;
-}
-.panel {
-  touch-action: pan-y;
-}

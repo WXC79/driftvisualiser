@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '13.1';
+  const DRIFT_BUILD = '13.2';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -21,7 +21,6 @@
   const grainSlider = document.getElementById('grain');
   const sceneMode = document.getElementById('sceneMode');
   const closeUiBtn = document.getElementById('closeUiBtn');
-  const touchToggle = document.getElementById('touchToggle');
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
   if (isStandalone) {
@@ -69,10 +68,6 @@
   uniform float uIntensity;
   uniform float uGrain;
   uniform vec2 uSeed;
-  const int MAX_TOUCH_CLOUDS = 24;
-  uniform int uTouchCloudCount;
-  uniform vec4 uTouchClouds[MAX_TOUCH_CLOUDS];   // xyz world center, radius
-  uniform vec2 uTouchCloudMeta[MAX_TOUCH_CLOUDS]; // strength, seed
 
 
   float hash21(vec2 p){
@@ -108,38 +103,12 @@
     float body=noise3(pp*0.0185+vec3(6.0+uSeed.x*0.02,-2.0,11.0+uSeed.y*0.03));
     float detail=noise3(pp*0.0375+vec3(13.0+uSeed.y*0.03,-7.0,5.0+uSeed.x*0.02));
     float field=large*0.68+body*0.24+detail*0.08;
-
-    // 13.0 touch clouds: lower the cloud threshold locally in world space.
-    // This reuses the existing noise field, so a held touch gathers irregular
-    // cloud volume instead of stamping a circular sprite or marshmallow blob.
-    float touchField=0.0;
-    for(int j=0;j<MAX_TOUCH_CLOUDS;j++){
-      if(j>=uTouchCloudCount) break;
-      vec4 tc=uTouchClouds[j];
-      vec2 tm=uTouchCloudMeta[j];
-      float r=max(1.0,tc.w);
-      float radial=1.0-smoothstep(r*0.18,r,distance(pp,tc.xyz));
-
-      // Irregular volumetric shaping: the touch volume inherits the same cloud noise,
-      // with extra breakup so it cannot read as a clean sphere.
-      float localNoise=noise3((pp-tc.xyz)*0.055+vec3(tm.y*8.0,3.7,-2.4));
-      float cloudShape=smoothstep(0.24,0.78,0.46+body*0.30+detail*0.18+localNoise*0.22);
-      float asym=0.84+0.16*sin(dot(pp-tc.xyz,vec3(0.071,0.053,0.061))+tm.y*6.2831);
-      touchField=max(touchField,radial*cloudShape*asym*tm.x);
-    }
-
     float threshold=0.534+openness*0.12-fog*0.11;
-    threshold -= touchField*0.56;
     threshold -= (uAudioSlow.x-0.5)*0.055*uIntensity;
     threshold -= (uAudioSlow.y-0.5)*0.015*uIntensity;
     threshold -= activity*0.006;
     float d=smoothstep(threshold,threshold+0.145,field);
     d=pow(d,1.14);
-
-    // Ensure a held touch is actually perceptible even in an otherwise open patch,
-    // while retaining noisy/volumetric edges rather than a flat stamped blob.
-    float touchBody=smoothstep(0.035,0.62,touchField);
-    d=max(d,touchBody*(0.50+0.34*body+0.16*detail));
     d *= 0.92 + uAudioSlow.w*0.15 + activity*0.035;
     float altitude=0.88+0.12*sin(p.y*0.008+uSeed.x);
     return clamp(d*altitude,0.0,1.0);
@@ -402,10 +371,7 @@
   const U = {
     resolution: loc('uResolution'), time: loc('uTime'), camera: loc('uCamera'), look: loc('uLook'),
     audio0: loc('uAudio0'), audio1: loc('uAudio1'), audioSlow: loc('uAudioSlow'),
-    sceneWeights: loc('uSceneWeights[0]'), intensity: loc('uIntensity'), grain: loc('uGrain'), seed: loc('uSeed'),
-    touchCloudCount: loc('uTouchCloudCount'),
-    touchClouds: loc('uTouchClouds[0]'),
-    touchCloudMeta: loc('uTouchCloudMeta[0]')
+    sceneWeights: loc('uSceneWeights[0]'), intensity: loc('uIntensity'), grain: loc('uGrain'), seed: loc('uSeed')
   };
 
   const SCENES = ['SUNRISE','BLUE SKY','SUNLIGHT','MIST','DARK CLOUD','THUNDERSTORM','SUNSET','NIGHT'];
@@ -607,8 +573,7 @@
     for(let i=0;i<8;i++) transitionFrom[i]=sceneWeights[i];
     nextDecision=transitionStart+72;
     camera.x=0; camera.y=0; camera.z=0; travel=0; yaw=0; pitch=0;
-    touchNodes.length=0;
-    finishTouchCloud();
+
     calibrated = false;
     previewInitialized = false;
     Object.assign(A, {
@@ -645,135 +610,6 @@
 
   const camera={x:0,y:0,z:0};
   let yaw=0,pitch=0,travel=0;
-
-  // ---- 13.0 touch-cloud world state ----
-  const MAX_TOUCH_CLOUDS = 24;
-  const touchNodes = [];
-  const touchCloudData = new Float32Array(MAX_TOUCH_CLOUDS*4);
-  const touchCloudMeta = new Float32Array(MAX_TOUCH_CLOUDS*2);
-  let touchPointerId = null;
-  let touchPendingTimer = null;
-  let touchCloudActive = false;
-  let touchGestureId = 0;
-  let touchHoldSeconds = 0;
-  let lastTouchPoint = null;
-  let lastTouchSpawnMs = 0;
-  let lastQuickTapMs = 0;
-  let backgroundGuarded = false;
-  let touchEnabled = true;
-
-  const v3norm = (x,y,z) => {
-    const m=Math.hypot(x,y,z)||1;
-    return [x/m,y/m,z/m];
-  };
-  const v3cross = (a,b) => [
-    a[1]*b[2]-a[2]*b[1],
-    a[2]*b[0]-a[0]*b[2],
-    a[0]*b[1]-a[1]*b[0]
-  ];
-
-  function touchRay(clientX, clientY){
-    const r=canvas.getBoundingClientRect();
-    const ux=(clientX-r.left)/Math.max(1,r.width);
-    const uy=(clientY-r.top)/Math.max(1,r.height);
-    let qx=ux*2-1;
-    let qy=(1-uy)*2-1;
-    qx*=r.width/Math.max(1,r.height);
-
-    const forward=v3norm(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch));
-    const right=v3norm(...v3cross(forward,[0,1,0]));
-    const up=v3norm(...v3cross(right,forward));
-    return v3norm(
-      forward[0]+right[0]*qx*0.84+up[0]*qy*0.61,
-      forward[1]+right[1]*qx*0.84+up[1]*qy*0.61,
-      forward[2]+right[2]*qx*0.84+up[2]*qy*0.61
-    );
-  }
-
-  function worldPointFromTouch(clientX,clientY,depth=64){
-    const rd=touchRay(clientX,clientY);
-    return [camera.x+rd[0]*depth,camera.y+rd[1]*depth,camera.z+rd[2]*depth];
-  }
-
-  function addTouchNode(clientX,clientY,{active=true,trail=false}={}){
-    const p=worldPointFromTouch(clientX,clientY,64);
-    const node={
-      x:p[0], y:p[1], z:p[2],
-      radius: trail ? Math.max(6.0, 6.8+touchHoldSeconds*1.55) : 6.8,
-      strength: trail ? Math.min(0.78,0.24+touchHoldSeconds*0.075) : 0.14,
-      seed:Math.random(),
-      gesture:touchGestureId,
-      active
-    };
-    touchNodes.push(node);
-    while(touchNodes.length>MAX_TOUCH_CLOUDS) touchNodes.shift();
-    return node;
-  }
-
-  function activeTouchNode(){
-    for(let i=touchNodes.length-1;i>=0;i--){
-      if(touchNodes[i].active && touchNodes[i].gesture===touchGestureId) return touchNodes[i];
-    }
-    return null;
-  }
-
-  function beginTouchCloud(clientX,clientY){
-    touchCloudActive=true;
-    touchHoldSeconds=0;
-    touchGestureId++;
-    lastTouchPoint={x:clientX,y:clientY};
-    lastTouchSpawnMs=performance.now();
-    addTouchNode(clientX,clientY,{active:true,trail:false});
-  }
-
-  function updateTouchClouds(dt){
-    if(touchCloudActive){
-      touchHoldSeconds+=dt;
-      const active=activeTouchNode();
-      if(active){
-        // No artificial short growth ceiling: a long hold keeps expanding the volume.
-        active.radius += dt*(4.8 + Math.min(7.0,touchHoldSeconds*0.26));
-        const targetStrength=Math.min(1.0,0.18+touchHoldSeconds*0.15);
-        active.strength=expSmooth(active.strength,targetStrength,1.55,dt);
-      }
-      // Previously laid parts of this gesture continue to knit together slowly.
-      for(const n of touchNodes){
-        if(n.gesture===touchGestureId && !n.active){
-          n.radius += dt*0.55;
-          n.strength=expSmooth(n.strength,Math.min(0.76,n.strength+0.035),0.22,dt);
-        }
-      }
-    }
-  }
-
-  function finishTouchCloud(){
-    clearTimeout(touchPendingTimer);
-    touchPendingTimer=null;
-    for(const n of touchNodes){
-      if(n.gesture===touchGestureId) n.active=false;
-    }
-    touchCloudActive=false;
-    touchHoldSeconds=0;
-    lastTouchPoint=null;
-    touchPointerId=null;
-  }
-
-  function packTouchCloudUniforms(){
-    touchCloudData.fill(0);
-    touchCloudMeta.fill(0);
-    const count=Math.min(MAX_TOUCH_CLOUDS,touchNodes.length);
-    const start=Math.max(0,touchNodes.length-count);
-    for(let i=0;i<count;i++){
-      const n=touchNodes[start+i];
-      touchCloudData[i*4+0]=n.x;
-      touchCloudData[i*4+1]=n.y;
-      touchCloudData[i*4+2]=n.z;
-      touchCloudData[i*4+3]=n.radius;
-      touchCloudMeta[i*2+0]=n.strength;
-      touchCloudMeta[i*2+1]=n.seed;
-    }
-    return count;
-  }
 
   function updateCamera(t,dt) {
     const desiredYaw=Math.sin(t*0.033+seed[0])*0.44+Math.sin(t*0.011+seed[1])*0.28 + (A.slowMid-0.5)*0.07;
@@ -848,7 +684,6 @@
     const now=ms/1000;
     let dt=Math.min(.05,Math.max(.001,now-last)); last=now;
     resize();
-    updateTouchClouds(dt);
     const playing = audioReady && !audio.paused && !audio.ended && hasStarted;
     if (playing) {
       analyseAudio(dt);
@@ -873,10 +708,6 @@
     gl.uniform1f(U.intensity,parseFloat(intensitySlider.value));
     gl.uniform1f(U.grain,parseFloat(grainSlider.value));
     gl.uniform2f(U.seed,seed[0],seed[1]);
-    const touchCount=packTouchCloudUniforms();
-    gl.uniform1i(U.touchCloudCount,touchCount);
-    if(U.touchClouds) gl.uniform4fv(U.touchClouds,touchCloudData);
-    if(U.touchCloudMeta) gl.uniform2fv(U.touchCloudMeta,touchCloudMeta);
     gl.drawArrays(gl.TRIANGLES,0,3);
 
     if(audioReady && isFinite(audio.duration) && audio.duration>0){
@@ -1066,13 +897,6 @@
     }
   });
 
-  touchToggle.addEventListener('change',()=>{
-    touchEnabled=touchToggle.checked;
-    if(!touchEnabled) finishTouchCloud();
-    statusEl.textContent=touchEnabled ? 'Touch Clouds · ON' : 'Touch Clouds · OFF';
-    scheduleUiHide();
-  });
-
   let hideTimer=null;
   function scheduleUiHide(){
     clearTimeout(hideTimer);
@@ -1095,11 +919,7 @@
       if(e.target===canvas || e.target.id==='vignette') showUI();
     },{passive:true});
   } else {
-    const isVisualTouchTarget = (e) => {
-      // Canvas when controls are hidden, or empty UI backdrop when controls are visible.
-      // Never steal touches from the actual settings panel/buttons.
-      return e.target===canvas || e.target===ui || e.target.id==='vignette';
-    };
+    const isVisualTouchTarget = (e) => e.target===canvas || e.target===ui || e.target.id==='vignette';
 
     const preventIOSGesture = e => {
       if(isVisualTouchTarget(e)) e.preventDefault();
@@ -1108,78 +928,16 @@
     document.addEventListener('selectstart',preventIOSGesture,{passive:false});
     document.addEventListener('dragstart',preventIOSGesture,{passive:false});
 
-    const onTouchStart = e => {
+    document.addEventListener('pointerdown',e=>{
       if(e.pointerType==='mouse' || !isVisualTouchTarget(e)) return;
-      e.preventDefault();
-      touchPointerId=e.pointerId;
-      try { e.target.setPointerCapture && e.target.setPointerCapture(e.pointerId); } catch(err) {}
-      const startX=e.clientX, startY=e.clientY;
-      lastTouchPoint={x:startX,y:startY};
-      clearTimeout(touchPendingTimer);
-
-      // Hold creates cloud only when enabled; quick double-tap remains available either way.
-      if(touchEnabled){
-        touchPendingTimer=setTimeout(()=>{
-          if(touchPointerId===e.pointerId && !touchCloudActive && touchEnabled){
-            beginTouchCloud(startX,startY);
-          }
-        },160);
-      }
-    };
-
-    const onTouchMove = e => {
-      if(e.pointerId!==touchPointerId) return;
-      e.preventDefault();
-      if(!touchCloudActive || !touchEnabled) return;
-
       const now=performance.now();
-      const active=activeTouchNode();
-      if(active){
-        const p=worldPointFromTouch(e.clientX,e.clientY,64);
-        // Smoothly pull the live volume with the finger.
-        const k=0.34;
-        active.x += (p[0]-active.x)*k;
-        active.y += (p[1]-active.y)*k;
-        active.z += (p[2]-active.z)*k;
-      }
-
-      const lp=lastTouchPoint || {x:e.clientX,y:e.clientY};
-      const moved=Math.hypot(e.clientX-lp.x,e.clientY-lp.y);
-      if(moved>18 && now-lastTouchSpawnMs>85){
-        if(active) active.active=false;
-        addTouchNode(e.clientX,e.clientY,{active:true,trail:true});
-        lastTouchPoint={x:e.clientX,y:e.clientY};
-        lastTouchSpawnMs=now;
-      }
-    };
-
-    const onTouchEnd = e => {
-      if(e.pointerId!==touchPointerId) return;
-      e.preventDefault();
-      clearTimeout(touchPendingTimer);
-      touchPendingTimer=null;
-
-      if(touchCloudActive){
-        finishTouchCloud();
+      if(now-lastRevealTap<360){
+        if(ui.classList.contains('visible')) hideUI(); else showUI();
+        lastRevealTap=0;
       } else {
-        const now=performance.now();
-        if(now-lastQuickTapMs<360){
-          if(ui.classList.contains('visible')) hideUI(); else showUI();
-          lastQuickTapMs=0;
-        } else {
-          lastQuickTapMs=now;
-        }
-        touchPointerId=null;
+        lastRevealTap=now;
       }
-      try { e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId); } catch(err) {}
-    };
-
-    // Bind at document level so iOS cannot silently route the gesture around the canvas
-    // when the transparent full-screen UI shell is present.
-    document.addEventListener('pointerdown',onTouchStart,{passive:false});
-    document.addEventListener('pointermove',onTouchMove,{passive:false});
-    document.addEventListener('pointerup',onTouchEnd,{passive:false});
-    document.addEventListener('pointercancel',onTouchEnd,{passive:false});
+    },{passive:true});
   }
 
   ui.addEventListener('pointerdown',e=>{

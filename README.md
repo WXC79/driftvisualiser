@@ -1,25 +1,24 @@
-# DRIFT 13.1 — Touch Fixed + Transport Fixed
+# DRIFT 13.2 — No-Touch Stable Build
 
-Built directly from 13.0.
+Built from 13.1, with the touch-cloud system removed completely.
 
-Fixes:
-- Touch Clouds now has an explicit ON/OFF checkbox in Visual Settings (default ON).
-- Touch handling is bound at document level and accepts both the WebGL canvas and the empty UI backdrop, avoiding iOS routing the gesture to the transparent menu shell.
-- Hold threshold reduced to ~160 ms.
-- Initial wisp is stronger but still faint.
-- Continued hold grows both radius and density with no short ceiling.
-- Drag trail is denser, smoother, and spawns with closer spacing.
-- Touch density now has a guaranteed noisy volumetric contribution, so it remains visible even in an open patch of sky.
-- iOS selection/callout suppression retained.
+Preserved:
+- flattened / improved Night scene from 13.0
+- portrait fullscreen workaround
+- current DRIFT icon / logo assets
+- boutique cloud Play/Pause control
+- sustained-rhythm audio response
+- improved Play/Pause state synchronization
+- background audio guard that prevents the brief audio burst when returning to the app
+- iOS long-press / text-selection suppression
+- double-tap visual to show/hide controls
+- established camera speed, renderer quality, and scene timing
 
-Transport:
-- Play/Pause icon state no longer depends on `readyState >= 2`.
-- Button updates optimistically on Play, then reconciles with the real audio state.
-- Added `playing` and `canplay` synchronization.
-- Guards against overlapping rapid Play/Pause taps.
-- Background audio mute/pause/suspend protection retained.
+Removed:
+- touch-cloud shader uniforms
+- touch-cloud world state
+- touch-cloud growth / drag logic
+- touch-cloud menu toggle
+- all per-frame touch-cloud calculations
 
-Night:
-- 13.0 flattened Night background retained.
-
-No other scene/timing changes.
+This is the performance-focused version 13 baseline.
