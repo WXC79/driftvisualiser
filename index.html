@@ -10,9 +10,9 @@
   <meta name="apple-mobile-web-app-title" content="DRIFT" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <meta name="description" content="DRIFT 12.11.11 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
-  <title>DRIFT 12.11.11 — Generative Music Visualiser</title>
-  <link rel="stylesheet" href="style.css?v=12.11.11" />
+  <meta name="description" content="DRIFT 12.11.12 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
+  <title>DRIFT 12.11.12 — Generative Music Visualiser</title>
+  <link rel="stylesheet" href="style.css?v=12.11.12" />
 </head>
 <body>
   <canvas id="gl"></canvas>
@@ -21,7 +21,7 @@
   <main id="ui" class="ui visible">
     <section class="panel" id="landing">
       <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
-      <div class="brand">DRIFT 12.11.11</div>
+      <div class="brand">DRIFT 12.11.12</div>
       <h1>GENERATIVE CLOUD VISUALISER</h1>
       <p class="lede">Choose music from your device. The file stays local: nothing is uploaded.</p>
 
@@ -66,12 +66,12 @@
         <span id="status">Waiting for music</span>
         <span id="scene">BLUE SKY</span>
       </div>
-      <p class="hint">Sunlight redone from scratch: brighter air, warm yellow haze, off-white cloud bodies, and obvious sunlit cloud edges. Night remains as tuned in 12.11.9. No touch controls in this build.</p>
+      <p class="hint">Sunlight refinement: keeps the brighter sun-filled atmosphere, restores cloud texture and depth, reduces stark whiteout, and adds a clearly visible warm yellow shimmer on sun-facing cloud edges. Night remains unchanged.</p>
     </section>
   </main>
 
   <audio id="audio" preload="metadata"></audio>
-  <script src="app.js?v=12.11.11"></script>
+  <script src="app.js?v=12.11.12"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));
