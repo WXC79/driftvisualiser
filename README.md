@@ -1,12 +1,12 @@
-# DRIFT 12.11.4 — slower weight / mist background refinement
+# DRIFT 12.11.5 — benchmark refinement
 
-Built directly from 12.11.3, keeping its luminance-continuity fixes.
+Based directly on the 12.11.4 benchmark.
 
 Changes:
-- Cloud generation / morphing slowed back down to approximately the 12.11.1 pace.
-- Forward travel reduced slightly (~8%) to give the environment more weight.
-- Mist now has its own blue-grey backing rather than inheriting Blue Sky.
-- Mist background uses a smooth blue-grey gradient with only extremely fine dithering to prevent visible contour bands.
+- Keeps the 12.11.4 cloud-generation and forward-travel speeds unchanged.
+- Requests a screen wake lock while music is actively playing, and releases it on pause/end.
+- Reacquires the wake lock when returning to the foreground.
+- Night scene gets occasional stronger cool moonlight haze and brighter cloud-edge illumination.
 - No playlist / multi-track code.
 
-The 12.11.3 brightness continuity changes are retained.
+Note: screen wake lock depends on browser/OS support and may still be overridden by the operating system in exceptional cases.

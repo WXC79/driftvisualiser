@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '12.11.4';
+  const DRIFT_BUILD = '12.11.5';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -170,11 +170,12 @@
     float moonDot=max(0.0,dot(rd,moonDir));
 
     float sunPresence=clamp(sunrise+sunlight+sunset+darkP*0.18,0.0,1.0)*(1.0-night)*(1.0-storm*0.92);
-    float moonPresence=night;
+    float moonCycle=pow(max(0.0,sin(uTime*0.043+uSeed.x*1.71+uSeed.y*0.63)),7.0);
+    float moonPresence=night*(0.72+moonCycle*0.58);
     vec3 sunColor=mix(vec3(1.00,0.78,0.38),vec3(0.99,0.60,0.34),sunrise*0.90);
     sunColor=mix(sunColor,vec3(0.96,0.49,0.30),sunset*0.95);
-    vec3 moonColor=vec3(0.58,0.68,0.84);
-    sky += moonColor*pow(moonDot,5.0)*moonPresence*0.018;
+    vec3 moonColor=vec3(0.62,0.72,0.90);
+    sky += moonColor*pow(moonDot,4.2)*moonPresence*(0.022+moonCycle*0.030);
 
     vec3 accum=vec3(0.0);
     float trans=1.0;
@@ -254,9 +255,10 @@
       cloud += sunsetEdgeTint * edge * sunset * 0.082 * (0.72 + 0.28*dens);
 
       float moonFacing=moonDot*moonDot;
-      float moonEdge=edge*(0.12+moonFacing*1.30)*moonPresence;
-      float moonInteriorGlow=(1.0-interior)*pow(moonDot,5.0)*moonPresence*0.004;
-      cloud+=moonColor*(moonEdge*0.72+moonInteriorGlow);
+      float moonEdge=edge*(0.13+moonFacing*1.42)*moonPresence;
+      float moonInteriorGlow=(1.0-interior)*pow(moonDot,4.6)*moonPresence*(0.0045+moonCycle*0.009);
+      float moonRimBurst=edge*moonFacing*night*moonCycle*0.34*(0.65+0.35*(1.0-interior));
+      cloud+=moonColor*(moonEdge*(0.72+moonCycle*0.34)+moonInteriorGlow+moonRimBurst);
 
       float alpha=1.0-exp(-dens*stepLength*0.050);
       accum+=trans*cloud*alpha;
@@ -266,7 +268,8 @@
     }
 
     vec3 base=accum+sky*trans;
-    base+=moonColor*pow(moonDot,4.0)*moonPresence*0.018;
+    float moonHaze=pow(moonDot,2.6)*night*(0.012+moonCycle*0.050);
+    base+=moonColor*(pow(moonDot,4.0)*moonPresence*0.018 + moonHaze*(0.35+0.65*trans));
 
     vec2 grainUV1=vec2(uv.x*431.7+uv.y*163.1, uv.x*-247.3+uv.y*389.4);
     vec2 grainUV2=vec2(uv.x*911.2-uv.y*507.6, uv.x*281.5+uv.y*769.8);
@@ -643,11 +646,40 @@
     return `${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
   }
 
+  let screenWakeLock=null;
+
+  async function requestScreenWakeLock(){
+    if(!('wakeLock' in navigator) || document.visibilityState!=='visible' || audio.paused) return;
+    try {
+      if(!screenWakeLock){
+        screenWakeLock=await navigator.wakeLock.request('screen');
+        screenWakeLock.addEventListener('release',()=>{ screenWakeLock=null; });
+      }
+    } catch(e) {
+      console.warn('Wake Lock unavailable:', e);
+    }
+  }
+
+  async function releaseScreenWakeLock(){
+    if(!screenWakeLock) return;
+    try { await screenWakeLock.release(); } catch(e) {}
+    screenWakeLock=null;
+  }
+
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible' && !audio.paused){
+      requestScreenWakeLock();
+    }
+  });
+
   async function startPlayback(){
     ensureAudioGraph();
     hasStarted = true;
     if(audioCtx.state==='suspended') await audioCtx.resume();
-    try { await audio.play(); } catch(e) { console.warn(e); }
+    try {
+      await audio.play();
+      await requestScreenWakeLock();
+    } catch(e) { console.warn(e); }
   }
 
   fileInput.addEventListener('change', async e => {
@@ -669,9 +701,9 @@
   playBtn.addEventListener('click', async () => {
     if(audio.paused){ await startPlayback(); } else audio.pause();
   });
-  audio.addEventListener('play',()=>{ playBtn.textContent='Ⅱ'; if (!calibrated) statusEl.textContent='Calibrating'; else statusEl.textContent=manualScene === null ? 'DRIFTING · AUTO' : `Scene locked · ${SCENES[manualScene]}`; });
-  audio.addEventListener('pause',()=>{ playBtn.textContent='▶'; statusEl.textContent=audio.currentTime>0?'Paused':'Ready'; });
-  audio.addEventListener('ended',()=>{ playBtn.textContent='▶'; statusEl.textContent='Finished'; calibrated=false; });
+  audio.addEventListener('play',()=>{ playBtn.textContent='Ⅱ'; requestScreenWakeLock(); if (!calibrated) statusEl.textContent='Calibrating'; else statusEl.textContent=manualScene === null ? 'DRIFTING · AUTO' : `Scene locked · ${SCENES[manualScene]}`; });
+  audio.addEventListener('pause',()=>{ playBtn.textContent='▶'; releaseScreenWakeLock(); statusEl.textContent=audio.currentTime>0?'Paused':'Ready'; });
+  audio.addEventListener('ended',()=>{ playBtn.textContent='▶'; releaseScreenWakeLock(); statusEl.textContent='Finished'; calibrated=false; });
   loopBtn.addEventListener('click',()=>{
     audio.loop=!audio.loop; loopBtn.setAttribute('aria-pressed',audio.loop?'true':'false');
   });
