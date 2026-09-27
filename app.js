@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '12.11.7';
+  const DRIFT_BUILD = '12.12.0';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -18,10 +18,12 @@
   const ui = document.getElementById('ui');
   const intensitySlider = document.getElementById('intensity');
   const speedSlider = document.getElementById('speed');
+  const touchCloudsToggle = document.getElementById('touchClouds');
   const grainSlider = document.getElementById('grain');
   const sceneMode = document.getElementById('sceneMode');
   const closeUiBtn = document.getElementById('closeUiBtn');
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
   if (isStandalone) {
     fullBtn.title = 'Running as a Home Screen web app';
     fullBtn.setAttribute('aria-label', 'Home Screen app mode');
@@ -67,6 +69,8 @@
   uniform float uIntensity;
   uniform float uGrain;
   uniform vec2 uSeed;
+  uniform vec4 uTouchClouds[16];     // xyz center, w radius
+  uniform vec4 uTouchCloudMeta[16];  // x strength, y seedA, z seedB, w reserved;
 
   float hash21(vec2 p){
     p=fract(p*vec2(123.34,456.21));
@@ -101,11 +105,35 @@
     float body=noise3(pp*0.0185+vec3(6.0+uSeed.x*0.02,-2.0,11.0+uSeed.y*0.03));
     float detail=noise3(pp*0.0375+vec3(13.0+uSeed.y*0.03,-7.0,5.0+uSeed.x*0.02));
     float field=large*0.68+body*0.24+detail*0.08;
+
+    float touchField=0.0;
+    for(int i=0;i<16;i++){
+      vec4 tc=uTouchClouds[i];
+      vec4 tm=uTouchCloudMeta[i];
+      float strength=tm.x;
+      if(strength<=0.001 || tc.w<=0.001) continue;
+      vec3 rel=p-tc.xyz;
+      float radius=max(tc.w,0.001);
+      vec3 local=rel/vec3(radius*1.24,radius*0.82,radius*1.08);
+      float dist=length(local);
+      float envelope=smoothstep(1.34,0.18,dist);
+      if(envelope>0.0){
+        float nA=noise3(rel*0.060 + vec3(tm.y*0.17,tm.z*0.13,5.0));
+        float nB=noise3(rel*0.104 + vec3(12.0+tm.z*0.07,3.0,8.0+tm.y*0.05));
+        float nC=noise3(rel*0.028 + vec3(3.0,16.0,4.0));
+        float shape=smoothstep(0.18,0.90,nA*0.54+nB*0.24+nC*0.22);
+        float puff=envelope*shape*strength;
+        touchField += puff*(1.0-touchField);
+      }
+    }
+
+    field=clamp(field + touchField*0.44,0.0,1.45);
     float threshold=0.534+openness*0.12-fog*0.11;
     threshold -= (uAudioSlow.x-0.5)*0.055*uIntensity;
     threshold -= (uAudioSlow.y-0.5)*0.015*uIntensity;
     threshold -= activity*0.006;
     float d=smoothstep(threshold,threshold+0.145,field);
+    d=max(d,touchField*0.92);
     d=pow(d,1.14);
     d *= 0.92 + uAudioSlow.w*0.15 + activity*0.035;
     float altitude=0.88+0.12*sin(p.y*0.008+uSeed.x);
@@ -172,10 +200,12 @@
     float sunPresence=clamp(sunrise+sunlight+sunset+darkP*0.18,0.0,1.0)*(1.0-night)*(1.0-storm*0.92);
     float moonCycle=pow(max(0.0,sin(uTime*0.043+uSeed.x*1.71+uSeed.y*0.63)),7.0);
     float moonPresence=night*(0.72+moonCycle*0.58);
-    vec3 sunColor=mix(vec3(1.00,0.78,0.38),vec3(0.99,0.60,0.34),sunrise*0.90);
+    vec3 sunColor=mix(vec3(1.00,0.78,0.38),vec3(1.00,0.66,0.36),sunrise*0.90);
     sunColor=mix(sunColor,vec3(0.96,0.49,0.30),sunset*0.95);
     vec3 moonColor=vec3(0.62,0.72,0.90);
     sky += moonColor*pow(moonDot,4.2)*moonPresence*(0.022+moonCycle*0.030);
+    float sunriseSkyGlow=pow(sunDot,3.0)*sunrise*(0.020+0.050*pow(max(0.0,sin(uTime*0.035+uSeed.x*1.41+uSeed.y*0.53)),6.0));
+    sky += sunColor * sunriseSkyGlow;
 
     vec3 accum=vec3(0.0);
     float trans=1.0;
@@ -249,14 +279,15 @@
       float sunCycle=pow(max(0.0,sin(uTime*0.035+uSeed.x*1.41+uSeed.y*0.53)),6.0);
       float sunEdge=edge*(0.10+sunFacing*0.72)*sunPresence;
       float sunInteriorGlow=(1.0-interior)*pow(sunDot,4.0)*sunPresence*(0.013 + sunrise*0.008 + sunset*0.003);
-      float sunlightBounce=sunlight*(0.20+sunFacing*0.56)*(1.0-interior)*(0.42+edge*1.55) + sunrise*(0.10+sunFacing*0.16)*(1.0-interior)*(0.38+edge*1.52);
+      float sunlightBounce=sunlight*(0.20+sunFacing*0.56)*(1.0-interior)*(0.42+edge*1.55) + sunrise*(0.12+sunFacing*0.22)*(1.0-interior)*(0.48+edge*1.86);
       float sunlightRim=edge*sunFacing*sunlight*(0.06+0.20*sunCycle)*(0.75+0.25*(1.0-interior));
+      float sunriseRim=edge*sunFacing*sunrise*(0.08+0.24*sunCycle)*(0.74+0.26*(1.0-interior));
       float musicSun=0.92+brightness*0.24+uAudioSlow.z*0.15+pulse*0.018;
-      cloud+=sunColor*(sunEdge*(0.22+sunlight*0.20+sunrise*0.16)+sunInteriorGlow+sunlightBounce*0.13+sunlightRim)*musicSun*(1.0 - sunset*0.08 - night*0.50);
+      cloud+=sunColor*(sunEdge*(0.22+sunlight*0.20+sunrise*0.22)+sunInteriorGlow+sunlightBounce*0.16+sunlightRim+sunriseRim)*musicSun*(1.0 - sunset*0.08 - night*0.50);
 
       vec3 sunriseEdgeTint = vec3(1.00,0.62,0.34);
       vec3 sunsetEdgeTint = vec3(0.98,0.60,0.72);
-      cloud += sunriseEdgeTint * edge * sunrise * 0.075 * (0.72 + 0.28*dens);
+      cloud += sunriseEdgeTint * edge * sunrise * 0.095 * (0.72 + 0.28*dens);
       cloud += sunsetEdgeTint * edge * sunset * 0.082 * (0.72 + 0.28*dens);
 
       float moonFacing=moonDot*moonDot;
@@ -274,9 +305,9 @@
 
     vec3 base=accum+sky*trans;
     float sunCycle=pow(max(0.0,sin(uTime*0.035+uSeed.x*1.41+uSeed.y*0.53)),6.0);
-    float sunlightHaze=pow(sunDot,2.3)*sunlight*(0.012+sunCycle*0.040);
+    float sunlightHaze=pow(sunDot,2.3)*(sunlight*(0.012+sunCycle*0.040) + sunrise*(0.018+sunCycle*0.062));
     float moonHaze=pow(moonDot,2.6)*night*(0.012+moonCycle*0.050);
-    base+=sunColor*(sunlightHaze*(0.30+0.70*trans));
+    base+=sunColor*(sunlightHaze*(0.34+0.66*trans));
     base+=moonColor*(pow(moonDot,4.0)*moonPresence*0.018 + moonHaze*(0.35+0.65*trans));
 
     vec2 grainUV1=vec2(uv.x*431.7+uv.y*163.1, uv.x*-247.3+uv.y*389.4);
@@ -330,7 +361,8 @@
   const U = {
     resolution: loc('uResolution'), time: loc('uTime'), camera: loc('uCamera'), look: loc('uLook'),
     audio0: loc('uAudio0'), audio1: loc('uAudio1'), audioSlow: loc('uAudioSlow'),
-    sceneWeights: loc('uSceneWeights[0]'), intensity: loc('uIntensity'), grain: loc('uGrain'), seed: loc('uSeed')
+    sceneWeights: loc('uSceneWeights[0]'), intensity: loc('uIntensity'), grain: loc('uGrain'), seed: loc('uSeed'),
+    touchClouds: loc('uTouchClouds[0]'), touchCloudMeta: loc('uTouchCloudMeta[0]')
   };
 
   const SCENES = ['SUNRISE','BLUE SKY','SUNLIGHT','MIST','DARK CLOUD','THUNDERSTORM','SUNSET','NIGHT'];
@@ -344,6 +376,128 @@
   let nextDecision = 78;
   let seed = [Math.random()*100, Math.random()*100];
   const transitionFrom = new Float32Array(8);
+
+  const MAX_TOUCH_CLOUDS = 16;
+  const touchClouds = new Float32Array(MAX_TOUCH_CLOUDS * 4);
+  const touchCloudMeta = new Float32Array(MAX_TOUCH_CLOUDS * 4);
+  let touchCloudHead = 0;
+  let touchCloudMode = isTouchDevice;
+  const touchStroke = {
+    active:false,
+    pointerId:null,
+    clientX:0,
+    clientY:0,
+    holdTime:0,
+    emitTimer:0,
+    prevWorld:null,
+    lastMoveTime:0,
+    speed:0,
+    seedA:0,
+    seedB:0
+  };
+  if(touchCloudsToggle){
+    touchCloudsToggle.checked = touchCloudMode;
+  }
+
+  function clearTouchClouds(){
+    touchClouds.fill(0);
+    touchCloudMeta.fill(0);
+    touchCloudHead = 0;
+    touchStroke.active = false;
+    touchStroke.pointerId = null;
+    touchStroke.prevWorld = null;
+  }
+
+  function cross(a,b){
+    return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+  }
+  function norm(v){
+    const len=Math.hypot(v[0],v[1],v[2]) || 1;
+    return [v[0]/len,v[1]/len,v[2]/len];
+  }
+  function getBasis(){
+    const forward = norm([Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch)]);
+    const right = norm(cross(forward,[0,1,0]));
+    const up = norm(cross(right,forward));
+    return {forward,right,up};
+  }
+  function mapTouchToWorld(clientX, clientY){
+    const rect=canvas.getBoundingClientRect();
+    const nx=((clientX-rect.left)/Math.max(1,rect.width))*2-1;
+    const ny=((clientY-rect.top)/Math.max(1,rect.height))*2-1;
+    const {forward,right,up}=getBasis();
+    const depth = 52 + (1-Math.min(1,Math.abs(nx)))*8 + (1-Math.min(1,Math.abs(ny)))*6;
+    const side = nx * depth * 0.54;
+    const lift = -ny * depth * 0.34;
+    return [
+      camera.x + forward[0]*depth + right[0]*side + up[0]*lift,
+      camera.y + forward[1]*depth + right[1]*side + up[1]*lift,
+      camera.z + forward[2]*depth + right[2]*side + up[2]*lift
+    ];
+  }
+  function spawnTouchCloud(worldPos, radius, strength, seedA, seedB){
+    const slot = touchCloudHead % MAX_TOUCH_CLOUDS;
+    touchCloudHead++;
+    const i = slot * 4;
+    touchClouds[i] = worldPos[0];
+    touchClouds[i+1] = worldPos[1];
+    touchClouds[i+2] = worldPos[2];
+    touchClouds[i+3] = radius;
+    touchCloudMeta[i] = strength;
+    touchCloudMeta[i+1] = seedA;
+    touchCloudMeta[i+2] = seedB;
+    touchCloudMeta[i+3] = 1.0;
+  }
+  function stampTouchCloud(dt){
+    if(!touchStroke.active || !touchCloudMode) return;
+    touchStroke.holdTime += dt;
+    touchStroke.emitTimer += dt;
+    if(touchStroke.emitTimer < 0.075) return;
+    touchStroke.emitTimer = 0;
+
+    const world = mapTouchToWorld(touchStroke.clientX, touchStroke.clientY);
+    let dragDistance = 0;
+    if(touchStroke.prevWorld){
+      dragDistance = Math.hypot(
+        world[0]-touchStroke.prevWorld[0],
+        world[1]-touchStroke.prevWorld[1],
+        world[2]-touchStroke.prevWorld[2]
+      );
+    }
+    const dragSpeed = dragDistance / Math.max(dt, 0.016);
+    touchStroke.speed = dragSpeed;
+
+    const holdGrow = Math.min(1, touchStroke.holdTime / 1.05);
+    const dragPenalty = Math.min(1, dragSpeed / 40);
+    const radius = 7.0 + holdGrow * 8.0 + (1.0-dragPenalty) * 3.0;
+    const strength = Math.max(0.34, Math.min(0.96, 0.40 + holdGrow * 0.34 + (1.0-dragPenalty)*0.18));
+
+    if(touchStroke.prevWorld){
+      const segment = Math.hypot(
+        world[0]-touchStroke.prevWorld[0],
+        world[1]-touchStroke.prevWorld[1],
+        world[2]-touchStroke.prevWorld[2]
+      );
+      const steps = Math.min(4, Math.max(1, Math.ceil(segment / Math.max(4.0, radius*0.42))));
+      for(let s=1;s<=steps;s++){
+        const k = s/steps;
+        const pos = [
+          touchStroke.prevWorld[0] + (world[0]-touchStroke.prevWorld[0]) * k,
+          touchStroke.prevWorld[1] + (world[1]-touchStroke.prevWorld[1]) * k,
+          touchStroke.prevWorld[2] + (world[2]-touchStroke.prevWorld[2]) * k
+        ];
+        spawnTouchCloud(pos, radius * (0.96 + 0.06*Math.sin((touchStroke.holdTime+k)*3.1)), strength, touchStroke.seedA + s*0.31, touchStroke.seedB + s*0.47);
+      }
+    } else {
+      spawnTouchCloud(world, radius, strength, touchStroke.seedA, touchStroke.seedB);
+    }
+    touchStroke.prevWorld = world;
+  }
+  function endTouchStroke(){
+    touchStroke.active = false;
+    touchStroke.pointerId = null;
+    touchStroke.prevWorld = null;
+  }
 
   let objectURL = null;
   let audioCtx = null;
@@ -524,6 +678,7 @@
     camera.x=0; camera.y=0; camera.z=0; travel=0; yaw=0; pitch=0;
     calibrated = false;
     previewInitialized = false;
+    clearTouchClouds();
     Object.assign(A, {
       bass:.5, mid:.5, high:.5, overall:.5, brightness:.5, flux:.0, pulse:.0, activity:.0,
       slowBass:.5, slowMid:.5, slowHigh:.5, slowOverall:.5,
@@ -617,6 +772,8 @@
     }
     const t = hasStarted ? frozenTime : 0.0;
 
+    stampTouchCloud(dt);
+
     const look=[Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch)];
     gl.useProgram(program);
     gl.uniform2f(U.resolution,canvas.width,canvas.height);
@@ -630,6 +787,8 @@
     gl.uniform1f(U.intensity,parseFloat(intensitySlider.value));
     gl.uniform1f(U.grain,parseFloat(grainSlider.value));
     gl.uniform2f(U.seed,seed[0],seed[1]);
+    gl.uniform4fv(U.touchClouds, touchClouds);
+    gl.uniform4fv(U.touchCloudMeta, touchCloudMeta);
     gl.drawArrays(gl.TRIANGLES,0,3);
 
     if(audioReady && isFinite(audio.duration) && audio.duration>0){
@@ -730,13 +889,24 @@
     if(audio.paused){ await startPlayback(); } else audio.pause();
   });
   audio.addEventListener('play',()=>{ syncTransportState(); requestScreenWakeLock(); if (!calibrated) statusEl.textContent='Calibrating'; else statusEl.textContent=manualScene === null ? 'DRIFTING · AUTO' : `Scene locked · ${SCENES[manualScene]}`; });
-  audio.addEventListener('pause',()=>{ syncTransportState(); statusEl.textContent=audio.currentTime>0?'Paused':'Ready'; });
-  audio.addEventListener('ended',()=>{ syncTransportState(); statusEl.textContent='Finished'; calibrated=false; });
+  audio.addEventListener('pause',()=>{ endTouchStroke(); syncTransportState(); statusEl.textContent=audio.currentTime>0?'Paused':'Ready'; });
+  audio.addEventListener('ended',()=>{ endTouchStroke(); syncTransportState(); statusEl.textContent='Finished'; calibrated=false; });
   audio.addEventListener('emptied',syncTransportState);
   loopBtn.addEventListener('click',()=>{
     audio.loop=!audio.loop; loopBtn.setAttribute('aria-pressed',audio.loop?'true':'false');
   });
   seek.addEventListener('input',()=>{ if(isFinite(audio.duration)){ audio.currentTime=parseFloat(seek.value); if(hasStarted) frozenTime=audio.currentTime; } });
+  if(touchCloudsToggle){
+    touchCloudsToggle.addEventListener('change',()=>{
+      touchCloudMode = !!touchCloudsToggle.checked;
+      canvas.style.touchAction = touchCloudMode ? 'none' : 'manipulation';
+      if(!touchCloudMode) endTouchStroke();
+      statusEl.textContent = touchCloudMode ? 'Touch clouds enabled' : 'Touch clouds disabled';
+      scheduleUiHide();
+    });
+    canvas.style.touchAction = touchCloudMode ? 'none' : 'manipulation';
+  }
+
   sceneMode.addEventListener('change',()=>{
     manualScene = sceneMode.value === 'auto' ? null : Number(sceneMode.value);
     const now = performance.now()/1000;
@@ -783,10 +953,69 @@
     ui.classList.remove('visible');
   }
   closeUiBtn.addEventListener('click',e=>{ e.stopPropagation(); hideUI(); });
-  document.addEventListener('pointermove',showUI,{passive:true});
-  document.addEventListener('pointerdown',e=>{
-    if(e.target===canvas || e.target.id==='vignette') showUI();
-  },{passive:true});
+
+  let lastRevealTap=0;
+  if(!isTouchDevice){
+    document.addEventListener('pointermove',showUI,{passive:true});
+    document.addEventListener('pointerdown',e=>{
+      if(e.target===canvas || e.target.id==='vignette') showUI();
+    },{passive:true});
+  } else {
+    document.addEventListener('pointerdown',e=>{
+      const bg = (e.target===canvas || e.target.id==='vignette');
+      if(!bg) return;
+
+      if(touchCloudMode && ui.classList.contains('visible')===false){
+        touchStroke.active = true;
+        touchStroke.pointerId = e.pointerId;
+        touchStroke.clientX = e.clientX;
+        touchStroke.clientY = e.clientY;
+        touchStroke.holdTime = 0;
+        touchStroke.emitTimer = 0.076; // stamp immediately
+        touchStroke.prevWorld = null;
+        touchStroke.seedA = Math.random()*100.0;
+        touchStroke.seedB = Math.random()*100.0;
+        if(canvas.setPointerCapture){
+          try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+        }
+        return;
+      }
+
+      const now = performance.now();
+      if(now-lastRevealTap < 360){
+        showUI();
+        lastRevealTap = 0;
+      } else {
+        lastRevealTap = now;
+      }
+    },{passive:true});
+
+    document.addEventListener('pointermove',e=>{
+      if(!touchStroke.active || e.pointerId!==touchStroke.pointerId) return;
+      touchStroke.clientX = e.clientX;
+      touchStroke.clientY = e.clientY;
+    },{passive:true});
+
+    const finishTouchStroke = e => {
+      if(touchStroke.active && e.pointerId===touchStroke.pointerId){
+        endTouchStroke();
+      }
+    };
+    document.addEventListener('pointerup',finishTouchStroke,{passive:true});
+    document.addEventListener('pointercancel',finishTouchStroke,{passive:true});
+
+    document.addEventListener('touchstart',e=>{
+      const target=e.target;
+      const bg = (target===canvas || target.id==='vignette');
+      if(!bg) return;
+      if(touchCloudMode && e.touches.length===2){
+        endTouchStroke();
+        showUI();
+        e.preventDefault();
+      }
+    },{passive:false});
+  }
+
   ui.addEventListener('pointerdown',e=>{
     // Tap anywhere outside the panel to dismiss it. Controls inside the panel remain interactive.
     if(e.target===ui){

@@ -10,9 +10,9 @@
   <meta name="apple-mobile-web-app-title" content="DRIFT" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <meta name="description" content="DRIFT 12.11.7 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
-  <title>DRIFT 12.11.7 — Generative Music Visualiser</title>
-  <link rel="stylesheet" href="style.css?v=12.11.7" />
+  <meta name="description" content="DRIFT 12.12.0 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
+  <title>DRIFT 12.12.0 — Generative Music Visualiser</title>
+  <link rel="stylesheet" href="style.css?v=12.12.0" />
 </head>
 <body>
   <canvas id="gl"></canvas>
@@ -21,7 +21,7 @@
   <main id="ui" class="ui visible">
     <section class="panel" id="landing">
       <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
-      <div class="brand">DRIFT 12.11.7</div>
+      <div class="brand">DRIFT 12.12.0</div>
       <h1>GENERATIVE CLOUD VISUALISER</h1>
       <p class="lede">Choose music from your device. The file stays local: nothing is uploaded.</p>
 
@@ -60,18 +60,19 @@
         <label><span>Visual intensity</span><input id="intensity" title="Adjust the strength of cloud motion and music response without changing the scene palette" type="range" min="0.5" max="1.35" value="1.08" step="0.01" /></label>
         <label><span>Forward motion</span><input id="speed" title="Adjust forward drift speed" type="range" min="0.65" max="1.55" value="1" step="0.01" /></label>
         <label><span>Grain</span><input id="grain" title="Adjust fine film-grain texture" type="range" min="0" max="2" value="1" step="0.01" /></label>
+        <label class="toggleRow"><span>Touch clouds</span><input id="touchClouds" title="Enable touch-and-drag cloud creation. While enabled on phones, use a two-finger tap to reopen the menu." type="checkbox" checked /></label>
       </details>
 
       <div class="statusLine">
         <span id="status">Waiting for music</span>
         <span id="scene">BLUE SKY</span>
       </div>
-      <p class="hint">Shows a still preview before playback. AUTO now uses slower cloud evolution and much longer scene crossfades. For the cleanest phone experience, add DRIFT to your Home Screen and open it as a web app. This build refines Thunderstorm, Night, Sunset and scene colour-borrowing so the clouds feel more embedded in each atmosphere.</p>
+      <p class="hint">Touch Clouds prototype: touch and hold on the visual to grow a cloud, drag while holding to keep growing and shape it, then release to leave it in the world. On phones, when Touch Clouds is enabled, use a two-finger tap to reopen the controls.</p>
     </section>
   </main>
 
   <audio id="audio" preload="metadata"></audio>
-  <script src="app.js?v=12.11.7"></script>
+  <script src="app.js?v=12.12.0"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));
