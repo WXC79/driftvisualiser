@@ -10,8 +10,8 @@
   <meta name="apple-mobile-web-app-title" content="DRIFT" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <meta name="description" content="DRIFT 12.12 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
-  <title>DRIFT 12.12 — Generative Music Visualiser</title>
+  <meta name="description" content="DRIFT 12.12.1 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
+  <title>DRIFT 12.12.1 — Generative Music Visualiser</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -21,11 +21,11 @@
   <main id="ui" class="ui visible">
     <section class="panel" id="landing">
       <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
-      <div class="brand">DRIFT 12.12</div>
+      <div class="brand">DRIFT 12.12.1</div>
       <h1>GENERATIVE CLOUD VISUALISER</h1>
       <p class="lede">Choose one track or several from your device. Files stay local: nothing is uploaded.</p>
 
-      <label class="fileButton" for="fileInput" title="Choose one or more music files from your device">CHOOSE MUSIC</label>
+      <label class="fileButton" for="fileInput" title="Choose a music file from your device">CHOOSE MUSIC</label>
       <input id="fileInput" type="file" multiple accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg" />
       <p id="fileName" class="filename">No track loaded</p>
       <p id="playlistInfo" class="playlistInfo">Single track or playlist</p>
@@ -34,7 +34,7 @@
         <button id="prevTrackBtn" class="iconButton" disabled aria-label="Previous track" title="Previous track">◀</button>
         <button id="playBtn" class="iconButton" disabled aria-label="Play" title="Play or pause the selected music">▶</button>
         <button id="nextTrackBtn" class="iconButton" disabled aria-label="Next track" title="Next track">▶</button>
-        <button id="playlistShuffleBtn" class="iconButton" aria-label="Shuffle playlist" aria-pressed="false" title="Shuffle playlist order">⇄</button>
+        <button id="playlistShuffleBtn" class="iconButton" disabled aria-label="Shuffle playlist" aria-pressed="false" title="Shuffle playlist order">⇄</button>
         <button id="loopBtn" class="iconButton" aria-label="Loop" aria-pressed="false" title="Loop the current track">↻</button>
         <button id="shuffleBtn" class="iconButton" aria-label="Regenerate journey" title="Regenerate the visual journey with a new random seed">⤨</button>
         <button id="fullBtn" class="iconButton" aria-label="Fullscreen" title="Enter or exit fullscreen">⛶</button>
@@ -70,7 +70,7 @@
         <span id="status">Waiting for music</span>
         <span id="scene">BLUE SKY</span>
       </div>
-      <p class="hint">Shows a still preview before playback. AUTO now uses slower cloud evolution and much longer scene crossfades. For the cleanest phone experience, add DRIFT to your Home Screen and open it as a web app. This build adds local multi-track playlists with sequence or shuffle playback, plus heavier rain scenes, richer sunrise/sunset colour and slightly slower cloud movement.</p>
+      <p class="hint">Shows a still preview before playback. AUTO now uses slower cloud evolution and much longer scene crossfades. For the cleanest phone experience, add DRIFT to your Home Screen and open it as a web app. This build restores the 12.11 rendering baseline, adds multi-track playback, deepens rain scenes, enriches sunrise/sunset cloud colour, and slows cloud evolution slightly.</p>
     </section>
   </main>
 

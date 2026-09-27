@@ -1,4 +1,4 @@
-const CACHE_NAME = 'drift-12-12-v1';
+const CACHE_NAME = 'drift-12-12-1-v1';
 const CORE = [
   './',
   './index.html',

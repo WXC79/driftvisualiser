@@ -1,15 +1,7 @@
-# DRIFT 12.12 — Playlist + atmosphere build
+# DRIFT 12.12.1 — repaired build
 
-## New in this build
+This build was rebuilt from the last known-working 12.11 renderer rather than patching the broken 12.12 build.
 
-- Select one track or many tracks at once.
-- Multiple tracks play sequentially by default.
-- Playlist shuffle toggle plus previous/next track controls.
-- Track changes preserve the visual journey instead of restarting it.
-- Thunderstorm is darker and weightier, with darker cloud bodies so lightning reads more clearly without excessive contrast.
-- Dark Cloud gets deeper greys, more rain-like weight, more mist/grain, and a greyer backing.
-- Sunrise and Sunset cloud edges inherit more of the scene pigment.
-- Sunrise uses richer orange/coral/pink/gold inspiration from real sunrise cloud references.
-- Cloud evolution and forward travel are slightly slower for more mass and scale.
+It keeps the 12.11 rendering path, adds the requested darker/heavier rain scenes, richer sunrise/sunset cloud tinting, slightly slower cloud evolution, and multi-track sequence/shuffle playback.
 
-All selected music remains local to the browser.
+Replace the whole GitHub Pages package so the service worker, HTML and JavaScript remain on the same version.

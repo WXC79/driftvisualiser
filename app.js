@@ -96,10 +96,10 @@
   }
 
   float cloudDensity(vec3 p,float fog,float openness,float motion,float pulse,float activity){
-    vec3 advect=vec3(uTime*(0.000092+motion*0.000052+activity*0.000038),uTime*0.000033,-uTime*(0.000066+motion*0.000046));
+    vec3 advect=vec3(uTime*(0.000094+motion*0.000054+activity*0.000039),uTime*0.000034,-uTime*(0.000068+motion*0.000047));
     vec3 pp=p+advect;
-    pp.y += sin(pp.x*0.010+uTime*0.23)*0.5*activity;
-    pp.z += sin(pp.y*0.013-uTime*0.20)*0.7*(pulse*0.55+activity*0.18);
+    pp.y += sin(pp.x*0.010+uTime*0.235)*0.5*activity;
+    pp.z += sin(pp.y*0.013-uTime*0.205)*0.7*(pulse*0.55+activity*0.18);
     float large=noise3(pp*0.0102+vec3(uSeed.x*0.071,uSeed.y*0.053,2.1));
     float body=noise3(pp*0.0185+vec3(6.0+uSeed.x*0.02,-2.0,11.0+uSeed.y*0.03));
     float detail=noise3(pp*0.0375+vec3(13.0+uSeed.y*0.03,-7.0,5.0+uSeed.x*0.02));
@@ -128,9 +128,9 @@
     float bass=uAudio0.x, mids=uAudio0.y, highs=uAudio0.z, energy=uAudio0.w;
     float brightness=uAudio1.x, flux=uAudio1.y, pulse=uAudio1.z, activity=uAudio1.w;
 
-    float fogBase=sunrise*0.22+blue*0.15+sunlight*0.15+mist*0.58+darkP*0.72+storm*0.94+sunset*0.25+night*0.62;
+    float fogBase=sunrise*0.23+blue*0.15+sunlight*0.15+mist*0.58+darkP*0.70+storm*0.92+sunset*0.25+night*0.62;
     float openBase=sunrise*0.82+blue*0.93+sunlight*0.90+mist*0.24+darkP*0.12+storm*0.06+sunset*0.80+night*0.16;
-    float grainBase=sunrise*0.034+blue*0.022+sunlight*0.030+mist*0.29+darkP*0.090+storm*0.170+sunset*0.052+night*0.108;
+    float grainBase=sunrise*0.034+blue*0.022+sunlight*0.030+mist*0.29+darkP*0.088+storm*0.165+sunset*0.050+night*0.108;
     float ambient=sunrise*0.73+blue*0.76+sunlight*0.76+mist*0.45+darkP*0.22+storm*0.085+sunset*0.70+night*0.045;
 
     float fog=clamp((fogBase/0.75)*(0.91+(uAudioSlow.x-0.5)*0.34*uIntensity + (uAudioSlow.w-0.5)*0.10*uIntensity),0.0,1.0);
@@ -147,15 +147,15 @@
 
     float skyY=clamp(0.48+rd.y*0.55,0.0,1.0);
     vec3 blueSky=mix(vec3(0.72,0.82,0.90),vec3(0.10,0.34,0.62),skyY);
-    vec3 sunriseSky=mix(vec3(1.00,0.48,0.20),vec3(0.46,0.25,0.38),skyY);
+    vec3 sunriseSky=mix(vec3(0.98,0.48,0.22),vec3(0.46,0.28,0.40),skyY);
     vec3 sunsetSky=mix(vec3(0.88,0.39,0.24),vec3(0.25,0.28,0.44),skyY);
-    vec3 darkSky=mix(vec3(0.255,0.27,0.28),vec3(0.095,0.105,0.11),skyY);
-    vec3 stormSky=mix(vec3(0.082,0.088,0.094),vec3(0.012,0.015,0.019),skyY);
+    vec3 darkSky=mix(vec3(0.26,0.275,0.285),vec3(0.095,0.105,0.112),skyY);
+    vec3 stormSky=mix(vec3(0.085,0.092,0.098),vec3(0.014,0.017,0.021),skyY);
     vec3 nightSky=mix(vec3(0.012,0.015,0.024),vec3(0.0008,0.0012,0.0035),skyY);
 
     vec3 sky=blueSky;
     sky=mix(sky,sunriseSky,sunrise*0.98);
-    sky=mix(sky,darkSky,darkP*1.00);
+    sky=mix(sky,darkSky,darkP*0.97);
     sky=mix(sky,stormSky,storm*1.00);
     sky=mix(sky,sunsetSky,sunset*0.96);
     sky=mix(sky,nightSky,night*1.00);
@@ -186,7 +186,7 @@
     for(int i=0;i<STEPS;i++){
       float dist=(float(i)+0.38)*stepLength;
       vec3 p=ro+rd*dist;
-      vec3 movingP=p+vec3(uTime*0.00164*motion,uTime*0.00046,-uTime*0.00118*motion);
+      vec3 movingP=p+vec3(uTime*0.00168*motion,uTime*0.00047,-uTime*0.00120*motion);
       float dens=cloudDensity(movingP,fog,openness,motion,pulse,activity);
       float farPresence=0.82+smoothstep(76.0,142.0,dist)*0.17;
       float nearSeparation=0.90+smoothstep(18.0,62.0,dist)*0.10;
@@ -202,35 +202,35 @@
 
       vec3 dayShadow=vec3(0.16,0.21,0.28);
       vec3 dayLight=vec3(0.86,0.89,0.90);
-      dayShadow=mix(dayShadow,vec3(0.42,0.19,0.20),sunrise*0.72);
-      dayLight=mix(dayLight,vec3(0.98,0.52,0.28),sunrise*0.94);
+      dayShadow=mix(dayShadow,vec3(0.40,0.20,0.22),sunrise*0.72);
+      dayLight=mix(dayLight,vec3(0.98,0.54,0.30),sunrise*0.92);
       dayShadow=mix(dayShadow,vec3(0.22,0.20,0.17),sunlight*0.22);
       dayLight=mix(dayLight,vec3(0.90,0.70,0.34),sunlight*0.64);
       dayShadow=mix(dayShadow,vec3(0.39,0.20,0.24),sunset*0.76);
-      dayLight=mix(dayLight,vec3(0.78,0.39,0.30),sunset*0.88);
+      dayLight=mix(dayLight,vec3(0.78,0.40,0.31),sunset*0.87);
       dayShadow=mix(dayShadow,vec3(0.085,0.092,0.098),darkP);
-      dayLight=mix(dayLight,vec3(0.30,0.315,0.325),darkP*0.98);
-      dayShadow=mix(dayShadow,vec3(0.040,0.045,0.050),storm);
-      dayLight=mix(dayLight,vec3(0.145,0.155,0.165),storm);
+      dayLight=mix(dayLight,vec3(0.31,0.325,0.335),darkP*0.98);
+      dayShadow=mix(dayShadow,vec3(0.045,0.050,0.055),storm);
+      dayLight=mix(dayLight,vec3(0.16,0.17,0.18),storm);
 
       vec3 nightShadow=vec3(0.004,0.005,0.012);
       vec3 nightLight=vec3(0.048,0.056,0.076);
       vec3 shadow=mix(dayShadow,nightShadow,night);
       vec3 lit=mix(dayLight,nightLight,night);
 
-      float bodyLight=clamp(0.58-interior*0.46-darkP*0.24-storm*0.44-night*0.40-sunset*0.10+ambient*0.06,0.016,0.80);
-      float lightCap = 0.86 - night*0.24 - sunset*0.14 - storm*0.20 - darkP*0.08;
+      float bodyLight=clamp(0.58-interior*0.46-darkP*0.23-storm*0.42-night*0.40-sunset*0.10+ambient*0.06,0.018,0.82);
+      float lightCap = 0.86 - night*0.24 - sunset*0.14 - storm*0.18 - darkP*0.06;
       bodyLight=clamp(bodyLight+(brightness-0.5)*0.10*uIntensity + (uAudioSlow.z-0.5)*0.05*uIntensity + pulse*0.008 + activity*0.018,0.018,lightCap);
       vec3 cloud=mix(shadow,lit,bodyLight);
       float greyVar = noise3(movingP*0.020 + vec3(9.0, 3.0, 6.0));
-      vec3 rainGrey = mix(vec3(0.105,0.115,0.12), vec3(0.39,0.405,0.415), greyVar);
-      cloud = mix(cloud, rainGrey, (darkP*0.32 + storm*0.26) * (0.35 + 0.65*dens));
-      vec3 moodTint = sunriseSky*(sunrise*0.50) + sunsetSky*(sunset*0.52) + darkSky*(darkP*0.30) + stormSky*(storm*0.38) + nightSky*(night*0.42);
-      float tintAmt = clamp(sunrise*0.24 + sunset*0.28 + darkP*0.18 + storm*0.20 + night*0.24, 0.0, 0.38);
+      vec3 rainGrey = mix(vec3(0.11,0.12,0.125), vec3(0.40,0.415,0.425), greyVar);
+      cloud = mix(cloud, rainGrey, (darkP*0.30 + storm*0.24) * (0.35 + 0.65*dens));
+      vec3 moodTint = sunriseSky*(sunrise*0.48) + sunsetSky*(sunset*0.50) + darkSky*(darkP*0.28) + stormSky*(storm*0.36) + nightSky*(night*0.42);
+      float tintAmt = clamp(sunrise*0.22 + sunset*0.27 + darkP*0.18 + storm*0.20 + night*0.24, 0.0, 0.38);
       cloud = mix(cloud, mix(cloud, moodTint, 0.58), tintAmt * (0.55 + 0.45*dens));
-      vec3 warmEdgeTint = mix(vec3(1.0,0.54,0.25), vec3(0.90,0.31,0.25), sunset);
+      vec3 warmEdgeTint = mix(vec3(1.0,0.55,0.27), vec3(0.88,0.32,0.26), sunset);
       float warmScene = max(sunrise, sunset);
-      cloud = mix(cloud, warmEdgeTint, edge * warmScene * (0.18 + 0.18*brightness));
+      cloud = mix(cloud, warmEdgeTint, edge * warmScene * (0.14 + 0.14*brightness));
       vec3 atmosphericCloud=mix(cloud,vec3(0.50,0.54,0.58),distanceDepth*0.10*(1.0-storm*0.8)*(1.0-night));
       cloud=mix(cloud,atmosphericCloud,distanceDepth*(0.45-darkP*0.10-storm*0.18-night*0.12));
       cloud+=lit*edge*(0.36+uAudioSlow.z*0.20*uIntensity + pulse*0.035);
@@ -245,8 +245,8 @@
       cloud+=vec3(0.84,0.88,0.92)*lightning*localFlash*dens*(0.42+edge*1.28+(1.0-interior)*0.28);
 
       float sunFacing=sunDot*sunDot;
-      float sunEdge=edge*(0.10+sunFacing*0.82)*sunPresence;
-      float sunInteriorGlow=(1.0-interior)*pow(sunDot,4.0)*sunPresence*(0.014 + sunrise*0.010);
+      float sunEdge=edge*(0.10+sunFacing*0.72)*sunPresence;
+      float sunInteriorGlow=(1.0-interior)*pow(sunDot,4.0)*sunPresence*(0.014 + sunrise*0.008);
       float sunlightBounce=sunlight*(0.24+sunFacing*0.62)*(1.0-interior)*(0.52+edge*1.85);
       float musicSun=0.92+brightness*0.24+uAudioSlow.z*0.15+pulse*0.018;
       cloud+=sunColor*(sunEdge*(0.36+sunlight*0.34)+sunInteriorGlow+sunlightBounce*0.20)*musicSun*(1.0 - sunset*0.18 - night*0.50);
@@ -497,66 +497,50 @@
     nextDecision=now + transitionDuration + dwellAfterTransition;
   }
 
-  function resetAudioCalibration() {
-    calibrated = false;
-    if (prevFreq) prevFreq.fill(0);
-    Object.assign(A, {
-      bass:.5, mid:.5, high:.5, overall:.5, brightness:.5, flux:.0, pulse:.0, activity:.0,
-      slowBass:.5, slowMid:.5, slowHigh:.5, slowOverall:.5,
-      baseBass:.1, baseMid:.1, baseHigh:.1, baseOverall:.1, baseFlux:.06, baseBright:.2,
-      devBass:.08, devMid:.08, devHigh:.08, devOverall:.08, devFlux:.04, devBright:.05
-    });
+  function updatePlaylistUI(){
+    const count=playlist.length;
+    if (prevTrackBtn) prevTrackBtn.disabled=count<2;
+    if (nextTrackBtn) nextTrackBtn.disabled=count<2;
+    if (playlistShuffleBtn) {
+      playlistShuffleBtn.disabled=count<2;
+      playlistShuffleBtn.setAttribute('aria-pressed',playlistShuffle?'true':'false');
+    }
+    if (playlistInfo) playlistInfo.textContent = count<2 ? (count===1?'1 track':'Single track or playlist') : `${playlistIndex+1} of ${count} tracks · ${playlistShuffle?'shuffle':'sequence'}`;
   }
 
-  function rebuildShuffleOrder() {
-    shuffledOrder = playlist.map((_,i)=>i);
+  function rebuildShuffleOrder(){
+    shuffledOrder=playlist.map((_,i)=>i);
     for(let i=shuffledOrder.length-1;i>0;i--){
       const j=Math.floor(Math.random()*(i+1));
       [shuffledOrder[i],shuffledOrder[j]]=[shuffledOrder[j],shuffledOrder[i]];
     }
-    const currentPos=shuffledOrder.indexOf(playlistIndex);
-    if(currentPos>0){
-      [shuffledOrder[0],shuffledOrder[currentPos]]=[shuffledOrder[currentPos],shuffledOrder[0]];
-    }
+    const p=shuffledOrder.indexOf(playlistIndex);
+    if(p>0) [shuffledOrder[0],shuffledOrder[p]]=[shuffledOrder[p],shuffledOrder[0]];
     shuffledPosition=0;
   }
 
-  function updatePlaylistUI(){
-    const count=playlist.length;
-    prevTrackBtn.disabled=count<2;
-    nextTrackBtn.disabled=count<2;
-    playlistShuffleBtn.disabled=count<2;
-    playlistShuffleBtn.setAttribute('aria-pressed',playlistShuffle?'true':'false');
-    if(!count){ playlistInfo.textContent='Single track or playlist'; return; }
-    playlistInfo.textContent=count===1 ? '1 track' : `${playlistIndex+1} of ${count} tracks · ${playlistShuffle?'shuffle':'sequence'}`;
-  }
-
-  function loadPlaylistTrack(index, {autoplay=false, resetVisual=false}={}) {
+  function loadTrack(index, autoplay=false, resetVisual=false){
     if(!playlist.length) return;
-    playlistIndex=((index%playlist.length)+playlist.length)%playlist.length;
-    const file=playlist[playlistIndex];
+    playlistIndex=(index+playlist.length)%playlist.length;
     if(objectURL) URL.revokeObjectURL(objectURL);
-    objectURL=URL.createObjectURL(file);
+    objectURL=URL.createObjectURL(playlist[playlistIndex]);
     audio.src=objectURL;
-    fileName.textContent=file.name;
-    seek.value=0; timeNow.textContent='0:00'; timeTotal.textContent='0:00';
-    resetAudioCalibration();
-    if(resetVisual){
-      hasStarted=false; frozenTime=0; previewInitialized=false; resetJourney();
-    }
+    fileName.textContent=playlist[playlistIndex].name;
+    if(resetVisual){ hasStarted=false; frozenTime=0; previewInitialized=false; resetJourney(); }
+    calibrated=false;
     updatePlaylistUI();
     if(autoplay) startPlayback();
   }
 
-  function advanceTrack(direction=1, autoplay=true){
+  function stepTrack(direction){
     if(playlist.length<2) return;
+    const autoplay=!audio.paused;
     if(playlistShuffle){
-      shuffledPosition += direction;
-      if(shuffledPosition>=shuffledOrder.length){ rebuildShuffleOrder(); shuffledPosition=0; }
-      if(shuffledPosition<0){ rebuildShuffleOrder(); shuffledPosition=shuffledOrder.length-1; }
-      loadPlaylistTrack(shuffledOrder[shuffledPosition], {autoplay, resetVisual:false});
+      if(!shuffledOrder.length) rebuildShuffleOrder();
+      shuffledPosition=(shuffledPosition+direction+shuffledOrder.length)%shuffledOrder.length;
+      loadTrack(shuffledOrder[shuffledPosition],autoplay,false);
     } else {
-      loadPlaylistTrack(playlistIndex+direction, {autoplay, resetVisual:false});
+      loadTrack(playlistIndex+direction,autoplay,false);
     }
   }
 
@@ -569,8 +553,14 @@
     for(let i=0;i<8;i++) transitionFrom[i]=sceneWeights[i];
     nextDecision=transitionStart+72;
     camera.x=0; camera.y=0; camera.z=0; travel=0; yaw=0; pitch=0;
+    calibrated = false;
     previewInitialized = false;
-    resetAudioCalibration();
+    Object.assign(A, {
+      bass:.5, mid:.5, high:.5, overall:.5, brightness:.5, flux:.0, pulse:.0, activity:.0,
+      slowBass:.5, slowMid:.5, slowHigh:.5, slowOverall:.5,
+      baseBass:.1, baseMid:.1, baseHigh:.1, baseOverall:.1, baseFlux:.06, baseBright:.2,
+      devBass:.08, devMid:.08, devHigh:.08, devOverall:.08, devFlux:.04, devBright:.05
+    });
     sceneEl.textContent=manualScene === null ? SCENES[1] : SCENES[manualScene];
     statusEl.textContent='Loaded — press play';
   }
@@ -603,7 +593,7 @@
   function updateCamera(t,dt) {
     const desiredYaw=Math.sin(t*0.033+seed[0])*0.44+Math.sin(t*0.011+seed[1])*0.28 + (A.slowMid-0.5)*0.07;
     yaw=expSmooth(yaw,desiredYaw,0.26 + A.activity*0.15,dt);
-    const speedBase=(10.9 + A.slowMid*2.7 + A.slowHigh*0.6 + A.slowOverall*1.25 + A.activity*0.62 + A.pulse*0.10) * 1.12;
+    const speedBase=(11.8 + A.slowMid*3.0 + A.slowHigh*0.7 + A.slowOverall*1.4 + A.activity*0.75 + A.pulse*0.12) * 1.15;
     const speed=speedBase*parseFloat(speedSlider.value);
     const direction=yaw+Math.sin(t*0.047+seed[1])*0.10;
     const lateral=(Math.sin(t*0.071+seed[0])*0.70+Math.sin(t*0.023+seed[1])*0.30)*(0.78 + A.activity*0.28);
@@ -651,7 +641,7 @@
     if (playing) {
       analyseAudio(dt);
       updateScenes(now,dt);
-      frozenTime += dt;
+      frozenTime = isFinite(audio.currentTime) ? audio.currentTime : frozenTime + dt;
       updateCamera(frozenTime,dt);
     } else {
       ensurePreviewFrame();
@@ -710,12 +700,13 @@
     playlist=files;
     playlistIndex=0;
     playlistShuffle=false;
-    shuffledOrder=[]; shuffledPosition=0;
+    shuffledOrder=[];
+    shuffledPosition=0;
     playBtn.disabled=false;
     seek.disabled=false;
     ensureAudioGraph();
     if(audioCtx.state==='suspended') await audioCtx.resume();
-    loadPlaylistTrack(0,{autoplay:false, resetVisual:true});
+    loadTrack(0,false,true);
     statusEl.textContent=files.length>1 ? `Playlist loaded · ${files.length} tracks` : 'Loaded — press play';
   });
 
@@ -724,18 +715,14 @@
   });
   audio.addEventListener('play',()=>{ playBtn.textContent='Ⅱ'; if (!calibrated) statusEl.textContent='Calibrating'; else statusEl.textContent=manualScene === null ? 'DRIFTING · AUTO' : `Scene locked · ${SCENES[manualScene]}`; });
   audio.addEventListener('pause',()=>{ playBtn.textContent='▶'; statusEl.textContent=audio.currentTime>0?'Paused':'Ready'; });
-  audio.addEventListener('ended',()=>{ playBtn.textContent='▶'; calibrated=false; if(playlist.length>1 && !audio.loop){ advanceTrack(1,true); } else { statusEl.textContent='Finished'; } });
-  prevTrackBtn.addEventListener('click',()=>advanceTrack(-1,!audio.paused));
-  nextTrackBtn.addEventListener('click',()=>advanceTrack(1,!audio.paused));
-  playlistShuffleBtn.addEventListener('click',()=>{
-    playlistShuffle=!playlistShuffle;
-    if(playlistShuffle) rebuildShuffleOrder();
-    updatePlaylistUI();
-  });
+  audio.addEventListener('ended',()=>{ playBtn.textContent='▶'; calibrated=false; if(playlist.length>1 && !audio.loop){ stepTrack(1); } else { statusEl.textContent='Finished'; } });
+  if(prevTrackBtn) prevTrackBtn.addEventListener('click',()=>stepTrack(-1));
+  if(nextTrackBtn) nextTrackBtn.addEventListener('click',()=>stepTrack(1));
+  if(playlistShuffleBtn) playlistShuffleBtn.addEventListener('click',()=>{ playlistShuffle=!playlistShuffle; if(playlistShuffle) rebuildShuffleOrder(); updatePlaylistUI(); });
   loopBtn.addEventListener('click',()=>{
     audio.loop=!audio.loop; loopBtn.setAttribute('aria-pressed',audio.loop?'true':'false');
   });
-  seek.addEventListener('input',()=>{ if(isFinite(audio.duration)) audio.currentTime=parseFloat(seek.value); });
+  seek.addEventListener('input',()=>{ if(isFinite(audio.duration)){ audio.currentTime=parseFloat(seek.value); if(hasStarted) frozenTime=audio.currentTime; } });
   sceneMode.addEventListener('change',()=>{
     manualScene = sceneMode.value === 'auto' ? null : Number(sceneMode.value);
     const now = performance.now()/1000;
