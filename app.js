@@ -124,8 +124,8 @@
     float bass=uAudio0.x, mids=uAudio0.y, highs=uAudio0.z, energy=uAudio0.w;
     float brightness=uAudio1.x, flux=uAudio1.y, pulse=uAudio1.z, activity=uAudio1.w;
 
-    float fogBase=sunrise*0.18+blue*0.15+sunlight*0.15+mist*0.58+darkP*0.54+storm*0.66+sunset*0.20+night*0.39;
-    float openBase=sunrise*0.84+blue*0.93+sunlight*0.90+mist*0.24+darkP*0.25+storm*0.14+sunset*0.82+night*0.38;
+    float fogBase=sunrise*0.20+blue*0.15+sunlight*0.15+mist*0.58+darkP*0.63+storm*0.76+sunset*0.20+night*0.50;
+    float openBase=sunrise*0.82+blue*0.93+sunlight*0.90+mist*0.24+darkP*0.12+storm*0.06+sunset*0.80+night*0.16;
     float grainBase=sunrise*0.026+blue*0.022+sunlight*0.030+mist*0.29+darkP*0.060+storm*0.125+sunset*0.030+night*0.062;
     float ambient=sunrise*0.73+blue*0.76+sunlight*0.76+mist*0.45+darkP*0.22+storm*0.085+sunset*0.70+night*0.045;
 
@@ -143,18 +143,18 @@
 
     float skyY=clamp(0.48+rd.y*0.55,0.0,1.0);
     vec3 blueSky=mix(vec3(0.72,0.82,0.90),vec3(0.10,0.34,0.62),skyY);
-    vec3 sunriseSky=mix(vec3(0.90,0.52,0.36),vec3(0.30,0.42,0.58),skyY);
+    vec3 sunriseSky=mix(vec3(0.98,0.56,0.26),vec3(0.38,0.34,0.44),skyY);
     vec3 sunsetSky=mix(vec3(0.88,0.39,0.24),vec3(0.25,0.28,0.44),skyY);
-    vec3 darkSky=mix(vec3(0.42,0.44,0.45),vec3(0.23,0.25,0.27),skyY);
-    vec3 stormSky=mix(vec3(0.095,0.105,0.112),vec3(0.010,0.014,0.020),skyY);
-    vec3 nightSky=mix(vec3(0.028,0.035,0.060),vec3(0.003,0.004,0.012),skyY);
+    vec3 darkSky=mix(vec3(0.31,0.33,0.35),vec3(0.12,0.14,0.15),skyY);
+    vec3 stormSky=mix(vec3(0.16,0.17,0.18),vec3(0.030,0.034,0.040),skyY);
+    vec3 nightSky=mix(vec3(0.018,0.022,0.034),vec3(0.001,0.002,0.006),skyY);
 
     vec3 sky=blueSky;
-    sky=mix(sky,sunriseSky,sunrise*0.94);
-    sky=mix(sky,darkSky,darkP*0.86);
-    sky=mix(sky,stormSky,storm*0.96);
+    sky=mix(sky,sunriseSky,sunrise*0.98);
+    sky=mix(sky,darkSky,darkP*0.97);
+    sky=mix(sky,stormSky,storm*1.00);
     sky=mix(sky,sunsetSky,sunset*0.96);
-    sky=mix(sky,nightSky,night*0.985);
+    sky=mix(sky,nightSky,night*1.00);
 
     float sunAz=uTime*0.043+uSeed.x;
     float sunEl=0.16+0.30*sin(uTime*0.029+uSeed.y);
@@ -167,7 +167,7 @@
 
     float sunPresence=clamp(sunrise+sunlight+sunset+darkP*0.18,0.0,1.0)*(1.0-night)*(1.0-storm*0.92);
     float moonPresence=night;
-    vec3 sunColor=mix(vec3(1.00,0.72,0.28),vec3(0.98,0.61,0.39),sunrise*0.90);
+    vec3 sunColor=mix(vec3(1.00,0.74,0.30),vec3(0.99,0.53,0.28),sunrise*0.90);
     sunColor=mix(sunColor,vec3(0.96,0.49,0.30),sunset*0.95);
     vec3 moonColor=vec3(0.58,0.68,0.84);
     sky += moonColor*pow(moonDot,5.0)*moonPresence*0.018;
@@ -199,26 +199,29 @@
       vec3 dayShadow=vec3(0.16,0.21,0.28);
       vec3 dayLight=vec3(0.86,0.89,0.90);
       dayShadow=mix(dayShadow,vec3(0.30,0.20,0.24),sunrise*0.62);
-      dayLight=mix(dayLight,vec3(0.90,0.66,0.50),sunrise*0.76);
+      dayLight=mix(dayLight,vec3(0.96,0.60,0.34),sunrise*0.88);
       dayShadow=mix(dayShadow,vec3(0.22,0.20,0.17),sunlight*0.22);
       dayLight=mix(dayLight,vec3(0.90,0.70,0.34),sunlight*0.64);
       dayShadow=mix(dayShadow,vec3(0.30,0.18,0.23),sunset*0.66);
       dayLight=mix(dayLight,vec3(0.88,0.55,0.40),sunset*0.80);
-      dayShadow=mix(dayShadow,vec3(0.075,0.080,0.086),darkP);
-      dayLight=mix(dayLight,vec3(0.22,0.23,0.24),darkP*0.96);
-      dayShadow=mix(dayShadow,vec3(0.016,0.019,0.023),storm);
-      dayLight=mix(dayLight,vec3(0.090,0.098,0.108),storm);
+      dayShadow=mix(dayShadow,vec3(0.10,0.105,0.11),darkP);
+      dayLight=mix(dayLight,vec3(0.36,0.37,0.39),darkP*0.98);
+      dayShadow=mix(dayShadow,vec3(0.055,0.060,0.066),storm);
+      dayLight=mix(dayLight,vec3(0.28,0.29,0.31),storm);
 
       vec3 nightShadow=vec3(0.004,0.005,0.012);
       vec3 nightLight=vec3(0.075,0.090,0.130);
       vec3 shadow=mix(dayShadow,nightShadow,night);
       vec3 lit=mix(dayLight,nightLight,night);
 
-      float bodyLight=clamp(0.60-interior*0.45-darkP*0.25-storm*0.45-night*0.34+ambient*0.07,0.018,0.80);
+      float bodyLight=clamp(0.60-interior*0.45-darkP*0.18-storm*0.30-night*0.34+ambient*0.07,0.018,0.84);
       bodyLight=clamp(bodyLight+(brightness-0.5)*0.12*uIntensity + (uAudioSlow.z-0.5)*0.07*uIntensity + pulse*0.012 + activity*0.025,0.018,0.88);
       vec3 cloud=mix(shadow,lit,bodyLight);
-      vec3 atmosphericCloud=mix(cloud,vec3(0.50,0.54,0.58),distanceDepth*0.12*(1.0-storm)*(1.0-night));
-      cloud=mix(cloud,atmosphericCloud,distanceDepth*0.55);
+      float greyVar = noise3(movingP*0.020 + vec3(9.0, 3.0, 6.0));
+      vec3 rainGrey = mix(vec3(0.17,0.18,0.19), vec3(0.48,0.49,0.50), greyVar);
+      cloud = mix(cloud, rainGrey, (darkP*0.26 + storm*0.18) * (0.35 + 0.65*dens));
+      vec3 atmosphericCloud=mix(cloud,vec3(0.50,0.54,0.58),distanceDepth*0.10*(1.0-storm*0.8)*(1.0-night));
+      cloud=mix(cloud,atmosphericCloud,distanceDepth*(0.45-darkP*0.10-storm*0.18-night*0.12));
       cloud+=lit*edge*(0.36+uAudioSlow.z*0.20*uIntensity + pulse*0.035);
       cloud+=shadow*exitEdge*(0.10+bass*0.08);
 
@@ -433,14 +436,14 @@
   function pickScene(now) {
     const e=A.slowOverall, b=A.slowBass, m=A.slowMid, h=A.slowHigh, br=A.brightness, f=A.flux, p=A.pulse, act=A.activity;
     const s = new Float32Array(8);
-    s[0] = 0.18 + br*0.18 + h*0.12 + (1-Math.abs(e-0.50))*0.18;                    // sunrise
-    s[1] = 0.20 + br*0.34 + (1-b)*0.16 + (1-f)*0.05;                                // blue
-    s[2] = 0.12 + br*0.42 + h*0.18 + act*0.18 + p*0.08;                             // sunlight
+    s[0] = 0.16 + br*0.24 + h*0.14 + (1-Math.abs(e-0.48))*0.16 + (1-f)*0.05;     // sunrise
+    s[1] = 0.15 + br*0.26 + (1-b)*0.12 + (1-f)*0.04;                                // blue
+    s[2] = 0.10 + br*0.34 + h*0.14 + act*0.14 + p*0.05;                             // sunlight
     s[3] = 0.12 + (1-e)*0.24 + (1-br)*0.12 + m*0.06;                                // mist
-    s[4] = 0.08 + b*0.30 + (1-br)*0.30 + (1-h)*0.08 + act*0.04;                     // dark
-    s[5] = 0.03 + f*0.62 + act*0.34 + b*0.14 + p*0.12;                              // storm
-    s[6] = 0.10 + (1-Math.abs(e-0.48))*0.14 + (1-br)*0.16 + h*0.10 + act*0.06;      // sunset
-    s[7] = 0.06 + (1-br)*0.26 + (1-e)*0.24 + b*0.12;                                // night
+    s[4] = 0.10 + b*0.24 + (1-br)*0.28 + (1-h)*0.08 + act*0.05;                     // dark
+    s[5] = 0.04 + f*0.58 + act*0.30 + b*0.16 + p*0.10;                              // storm
+    s[6] = 0.11 + (1-Math.abs(e-0.48))*0.15 + (1-br)*0.16 + h*0.10 + act*0.06;      // sunset
+    s[7] = 0.08 + (1-br)*0.32 + (1-e)*0.28 + b*0.10 + (1-h)*0.06;                   // night
 
     for(let i=0;i<8;i++){
       s[i] *= 0.92 + Math.random()*0.18;
@@ -448,16 +451,20 @@
     }
 
     if (act > 0.62 || f > 0.58) {
-      s[5] *= 1.6;
-      s[2] *= 1.2;
-      s[1] *= 0.84;
-      s[7] *= 0.74;
+      s[5] *= 1.45;
+      s[2] *= 1.10;
+      s[1] *= 0.78;
+      s[7] *= 0.86;
     }
     if (e < 0.42 && br < 0.44) {
-      s[3] *= 1.18;
-      s[4] *= 1.15;
-      s[7] *= 1.10;
-      s[2] *= 0.78;
+      s[3] *= 1.12;
+      s[4] *= 1.18;
+      s[7] *= 1.26;
+      s[2] *= 0.72;
+    }
+    if (br > 0.58 && f < 0.34) {
+      s[0] *= 1.28;
+      s[6] *= 1.10;
     }
 
     let total=0; for(const v of s) total+=v;
