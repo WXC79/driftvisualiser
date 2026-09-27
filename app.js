@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '12.11.6';
+  const DRIFT_BUILD = '12.11.7';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -675,11 +675,30 @@
     screenWakeLock=null;
   }
 
+  function syncTransportState(){
+    const actuallyPlaying = !audio.paused && !audio.ended && audio.readyState >= 2;
+    playBtn.textContent = actuallyPlaying ? 'Ⅱ' : '▶';
+    if(!actuallyPlaying){
+      releaseScreenWakeLock();
+      if(audio.currentTime>0 && !audio.ended) statusEl.textContent='Paused';
+    }
+    return actuallyPlaying;
+  }
+
   document.addEventListener('visibilitychange',()=>{
-    if(document.visibilityState==='visible' && !audio.paused){
-      requestScreenWakeLock();
+    if(document.visibilityState==='hidden'){
+      // iOS/Home Screen can suspend media without reliably updating the transport UI.
+      // Explicitly pause when leaving so the visual state and button never disagree.
+      if(!audio.paused) audio.pause();
+      syncTransportState();
+    } else {
+      const playing=syncTransportState();
+      if(playing) requestScreenWakeLock();
     }
   });
+
+  window.addEventListener('pageshow',syncTransportState);
+  window.addEventListener('focus',syncTransportState);
 
   async function startPlayback(){
     ensureAudioGraph();
@@ -710,9 +729,10 @@
   playBtn.addEventListener('click', async () => {
     if(audio.paused){ await startPlayback(); } else audio.pause();
   });
-  audio.addEventListener('play',()=>{ playBtn.textContent='Ⅱ'; requestScreenWakeLock(); if (!calibrated) statusEl.textContent='Calibrating'; else statusEl.textContent=manualScene === null ? 'DRIFTING · AUTO' : `Scene locked · ${SCENES[manualScene]}`; });
-  audio.addEventListener('pause',()=>{ playBtn.textContent='▶'; releaseScreenWakeLock(); statusEl.textContent=audio.currentTime>0?'Paused':'Ready'; });
-  audio.addEventListener('ended',()=>{ playBtn.textContent='▶'; releaseScreenWakeLock(); statusEl.textContent='Finished'; calibrated=false; });
+  audio.addEventListener('play',()=>{ syncTransportState(); requestScreenWakeLock(); if (!calibrated) statusEl.textContent='Calibrating'; else statusEl.textContent=manualScene === null ? 'DRIFTING · AUTO' : `Scene locked · ${SCENES[manualScene]}`; });
+  audio.addEventListener('pause',()=>{ syncTransportState(); statusEl.textContent=audio.currentTime>0?'Paused':'Ready'; });
+  audio.addEventListener('ended',()=>{ syncTransportState(); statusEl.textContent='Finished'; calibrated=false; });
+  audio.addEventListener('emptied',syncTransportState);
   loopBtn.addEventListener('click',()=>{
     audio.loop=!audio.loop; loopBtn.setAttribute('aria-pressed',audio.loop?'true':'false');
   });
@@ -767,7 +787,15 @@
   document.addEventListener('pointerdown',e=>{
     if(e.target===canvas || e.target.id==='vignette') showUI();
   },{passive:true});
-  ui.addEventListener('pointerdown',scheduleUiHide,{passive:true});
+  ui.addEventListener('pointerdown',e=>{
+    // Tap anywhere outside the panel to dismiss it. Controls inside the panel remain interactive.
+    if(e.target===ui){
+      e.stopPropagation();
+      hideUI();
+      return;
+    }
+    scheduleUiHide();
+  });
   ui.addEventListener('input',scheduleUiHide,{passive:true});
   audio.addEventListener('play',showUI);
   resetJourney();

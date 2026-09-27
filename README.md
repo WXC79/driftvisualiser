@@ -1,12 +1,11 @@
-# DRIFT 12.11.6 — Sunlight / Dark Cloud refinement
+# DRIFT 12.11.7 — operation polish
 
-Based directly on 12.11.5.
+Based directly on the 12.11.6 visual benchmark.
 
 Changes:
-- Keeps the 12.11.4 / 12.11.5 benchmark speed and wake-lock behaviour.
-- Sunlight now uses more atmospheric warm haze and occasional sun-catching edge light, instead of reading mostly as yellow cloud tint.
-- Blue Sky remains the cleaner / whiter bright-day scene.
-- Dark Cloud now keeps a clearly grey light-to-mid-grey backing, with less chance of reading as blue sky.
-- Dark Cloud cloud bodies have deeper grey variation with some noticeably darker pockets and masses.
-
-No playlist / multi-track code.
+- Visual rendering, scene look, cloud speed and forward travel are unchanged.
+- When the app leaves the foreground, playback is explicitly paused so the transport state cannot remain stuck showing Pause after audio has stopped.
+- On return/focus, the Play/Pause button is reconciled with the actual audio state.
+- Tapping the area behind/outside the menu panel now closes the menu, so the X is no longer required when scrolled down.
+- Wake-lock behavior is retained while playback is active.
+- No playlist / multi-track code.

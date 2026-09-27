@@ -10,9 +10,9 @@
   <meta name="apple-mobile-web-app-title" content="DRIFT" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <meta name="description" content="DRIFT 12.11.6 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
-  <title>DRIFT 12.11.6 — Generative Music Visualiser</title>
-  <link rel="stylesheet" href="style.css?v=12.11.6" />
+  <meta name="description" content="DRIFT 12.11.7 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
+  <title>DRIFT 12.11.7 — Generative Music Visualiser</title>
+  <link rel="stylesheet" href="style.css?v=12.11.7" />
 </head>
 <body>
   <canvas id="gl"></canvas>
@@ -21,7 +21,7 @@
   <main id="ui" class="ui visible">
     <section class="panel" id="landing">
       <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
-      <div class="brand">DRIFT 12.11.6</div>
+      <div class="brand">DRIFT 12.11.7</div>
       <h1>GENERATIVE CLOUD VISUALISER</h1>
       <p class="lede">Choose music from your device. The file stays local: nothing is uploaded.</p>
 
@@ -71,7 +71,7 @@
   </main>
 
   <audio id="audio" preload="metadata"></audio>
-  <script src="app.js?v=12.11.6"></script>
+  <script src="app.js?v=12.11.7"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));
