@@ -619,11 +619,37 @@
   let fpsAccum=0, fpsFrames=0, fpsTimer=0;
   function resize() {
     const dpr=Math.min(window.devicePixelRatio||1,1.65);
-    const w=Math.max(2,Math.floor(innerWidth*dpr*qualityScale));
-    const h=Math.max(2,Math.floor(innerHeight*dpr*qualityScale));
-    if(canvas.width!==w||canvas.height!==h){ canvas.width=w; canvas.height=h; gl.viewport(0,0,w,h); }
+    const rect=canvas.getBoundingClientRect();
+    const cssW=Math.max(2,rect.width||innerWidth);
+    const cssH=Math.max(2,rect.height||innerHeight);
+    const w=Math.max(2,Math.floor(cssW*dpr*qualityScale));
+    const h=Math.max(2,Math.floor(cssH*dpr*qualityScale));
+    if(canvas.width!==w||canvas.height!==h){
+      canvas.width=w;
+      canvas.height=h;
+      gl.viewport(0,0,w,h);
+    }
   }
   window.addEventListener('resize',resize,{passive:true});
+
+  function logViewportDiagnostics(label){
+    try {
+      const r=canvas.getBoundingClientRect();
+      const vv=window.visualViewport;
+      console.info('[DRIFT viewport]', label, {
+        standalone: !!(window.matchMedia('(display-mode: standalone)').matches || navigator.standalone),
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+        screenWidth: window.screen && window.screen.width,
+        screenHeight: window.screen && window.screen.height,
+        visualViewportHeight: vv && vv.height,
+        safeCanvasHeight: r.height,
+        orientation: window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'
+      });
+    } catch(e) {}
+  }
+  window.addEventListener('pageshow',()=>setTimeout(()=>logViewportDiagnostics('pageshow'),120));
+  window.addEventListener('orientationchange',()=>setTimeout(()=>logViewportDiagnostics('orientationchange'),360));
 
   let last=performance.now()/1000;
   let hasStarted = false;
