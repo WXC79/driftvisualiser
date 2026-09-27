@@ -5,7 +5,11 @@
   const audio = document.getElementById('audio');
   const fileInput = document.getElementById('fileInput');
   const fileName = document.getElementById('fileName');
+  const playlistInfo = document.getElementById('playlistInfo');
   const playBtn = document.getElementById('playBtn');
+  const prevTrackBtn = document.getElementById('prevTrackBtn');
+  const nextTrackBtn = document.getElementById('nextTrackBtn');
+  const playlistShuffleBtn = document.getElementById('playlistShuffleBtn');
   const loopBtn = document.getElementById('loopBtn');
   const shuffleBtn = document.getElementById('shuffleBtn');
   const fullBtn = document.getElementById('fullBtn');
@@ -92,10 +96,10 @@
   }
 
   float cloudDensity(vec3 p,float fog,float openness,float motion,float pulse,float activity){
-    vec3 advect=vec3(uTime*(0.000108+motion*0.000062+activity*0.000045),uTime*0.000039,-uTime*(0.000078+motion*0.000054));
+    vec3 advect=vec3(uTime*(0.000092+motion*0.000052+activity*0.000038),uTime*0.000033,-uTime*(0.000066+motion*0.000046));
     vec3 pp=p+advect;
-    pp.y += sin(pp.x*0.010+uTime*0.27)*0.5*activity;
-    pp.z += sin(pp.y*0.013-uTime*0.24)*0.7*(pulse*0.55+activity*0.18);
+    pp.y += sin(pp.x*0.010+uTime*0.23)*0.5*activity;
+    pp.z += sin(pp.y*0.013-uTime*0.20)*0.7*(pulse*0.55+activity*0.18);
     float large=noise3(pp*0.0102+vec3(uSeed.x*0.071,uSeed.y*0.053,2.1));
     float body=noise3(pp*0.0185+vec3(6.0+uSeed.x*0.02,-2.0,11.0+uSeed.y*0.03));
     float detail=noise3(pp*0.0375+vec3(13.0+uSeed.y*0.03,-7.0,5.0+uSeed.x*0.02));
@@ -124,9 +128,9 @@
     float bass=uAudio0.x, mids=uAudio0.y, highs=uAudio0.z, energy=uAudio0.w;
     float brightness=uAudio1.x, flux=uAudio1.y, pulse=uAudio1.z, activity=uAudio1.w;
 
-    float fogBase=sunrise*0.20+blue*0.15+sunlight*0.15+mist*0.58+darkP*0.63+storm*0.86+sunset*0.22+night*0.62;
+    float fogBase=sunrise*0.22+blue*0.15+sunlight*0.15+mist*0.58+darkP*0.72+storm*0.94+sunset*0.25+night*0.62;
     float openBase=sunrise*0.82+blue*0.93+sunlight*0.90+mist*0.24+darkP*0.12+storm*0.06+sunset*0.80+night*0.16;
-    float grainBase=sunrise*0.026+blue*0.022+sunlight*0.030+mist*0.29+darkP*0.060+storm*0.145+sunset*0.040+night*0.108;
+    float grainBase=sunrise*0.034+blue*0.022+sunlight*0.030+mist*0.29+darkP*0.090+storm*0.170+sunset*0.052+night*0.108;
     float ambient=sunrise*0.73+blue*0.76+sunlight*0.76+mist*0.45+darkP*0.22+storm*0.085+sunset*0.70+night*0.045;
 
     float fog=clamp((fogBase/0.75)*(0.91+(uAudioSlow.x-0.5)*0.34*uIntensity + (uAudioSlow.w-0.5)*0.10*uIntensity),0.0,1.0);
@@ -143,15 +147,15 @@
 
     float skyY=clamp(0.48+rd.y*0.55,0.0,1.0);
     vec3 blueSky=mix(vec3(0.72,0.82,0.90),vec3(0.10,0.34,0.62),skyY);
-    vec3 sunriseSky=mix(vec3(0.98,0.56,0.26),vec3(0.38,0.34,0.44),skyY);
+    vec3 sunriseSky=mix(vec3(1.00,0.48,0.20),vec3(0.46,0.25,0.38),skyY);
     vec3 sunsetSky=mix(vec3(0.88,0.39,0.24),vec3(0.25,0.28,0.44),skyY);
-    vec3 darkSky=mix(vec3(0.31,0.33,0.35),vec3(0.12,0.14,0.15),skyY);
-    vec3 stormSky=mix(vec3(0.12,0.125,0.13),vec3(0.022,0.024,0.028),skyY);
+    vec3 darkSky=mix(vec3(0.255,0.27,0.28),vec3(0.095,0.105,0.11),skyY);
+    vec3 stormSky=mix(vec3(0.082,0.088,0.094),vec3(0.012,0.015,0.019),skyY);
     vec3 nightSky=mix(vec3(0.012,0.015,0.024),vec3(0.0008,0.0012,0.0035),skyY);
 
     vec3 sky=blueSky;
     sky=mix(sky,sunriseSky,sunrise*0.98);
-    sky=mix(sky,darkSky,darkP*0.97);
+    sky=mix(sky,darkSky,darkP*1.00);
     sky=mix(sky,stormSky,storm*1.00);
     sky=mix(sky,sunsetSky,sunset*0.96);
     sky=mix(sky,nightSky,night*1.00);
@@ -182,7 +186,7 @@
     for(int i=0;i<STEPS;i++){
       float dist=(float(i)+0.38)*stepLength;
       vec3 p=ro+rd*dist;
-      vec3 movingP=p+vec3(uTime*0.00195*motion,uTime*0.00055,-uTime*0.00140*motion);
+      vec3 movingP=p+vec3(uTime*0.00164*motion,uTime*0.00046,-uTime*0.00118*motion);
       float dens=cloudDensity(movingP,fog,openness,motion,pulse,activity);
       float farPresence=0.82+smoothstep(76.0,142.0,dist)*0.17;
       float nearSeparation=0.90+smoothstep(18.0,62.0,dist)*0.10;
@@ -198,32 +202,35 @@
 
       vec3 dayShadow=vec3(0.16,0.21,0.28);
       vec3 dayLight=vec3(0.86,0.89,0.90);
-      dayShadow=mix(dayShadow,vec3(0.30,0.20,0.24),sunrise*0.62);
-      dayLight=mix(dayLight,vec3(0.96,0.60,0.34),sunrise*0.88);
+      dayShadow=mix(dayShadow,vec3(0.42,0.19,0.20),sunrise*0.72);
+      dayLight=mix(dayLight,vec3(0.98,0.52,0.28),sunrise*0.94);
       dayShadow=mix(dayShadow,vec3(0.22,0.20,0.17),sunlight*0.22);
       dayLight=mix(dayLight,vec3(0.90,0.70,0.34),sunlight*0.64);
-      dayShadow=mix(dayShadow,vec3(0.34,0.20,0.22),sunset*0.70);
-      dayLight=mix(dayLight,vec3(0.76,0.43,0.31),sunset*0.82);
-      dayShadow=mix(dayShadow,vec3(0.10,0.105,0.11),darkP);
-      dayLight=mix(dayLight,vec3(0.36,0.37,0.39),darkP*0.98);
-      dayShadow=mix(dayShadow,vec3(0.070,0.074,0.078),storm);
-      dayLight=mix(dayLight,vec3(0.22,0.23,0.24),storm);
+      dayShadow=mix(dayShadow,vec3(0.39,0.20,0.24),sunset*0.76);
+      dayLight=mix(dayLight,vec3(0.78,0.39,0.30),sunset*0.88);
+      dayShadow=mix(dayShadow,vec3(0.085,0.092,0.098),darkP);
+      dayLight=mix(dayLight,vec3(0.30,0.315,0.325),darkP*0.98);
+      dayShadow=mix(dayShadow,vec3(0.040,0.045,0.050),storm);
+      dayLight=mix(dayLight,vec3(0.145,0.155,0.165),storm);
 
       vec3 nightShadow=vec3(0.004,0.005,0.012);
       vec3 nightLight=vec3(0.048,0.056,0.076);
       vec3 shadow=mix(dayShadow,nightShadow,night);
       vec3 lit=mix(dayLight,nightLight,night);
 
-      float bodyLight=clamp(0.60-interior*0.45-darkP*0.18-storm*0.36-night*0.40-sunset*0.08+ambient*0.07,0.018,0.84);
-      float lightCap = 0.88 - night*0.24 - sunset*0.13 - storm*0.10;
+      float bodyLight=clamp(0.58-interior*0.46-darkP*0.24-storm*0.44-night*0.40-sunset*0.10+ambient*0.06,0.016,0.80);
+      float lightCap = 0.86 - night*0.24 - sunset*0.14 - storm*0.20 - darkP*0.08;
       bodyLight=clamp(bodyLight+(brightness-0.5)*0.10*uIntensity + (uAudioSlow.z-0.5)*0.05*uIntensity + pulse*0.008 + activity*0.018,0.018,lightCap);
       vec3 cloud=mix(shadow,lit,bodyLight);
       float greyVar = noise3(movingP*0.020 + vec3(9.0, 3.0, 6.0));
-      vec3 rainGrey = mix(vec3(0.18,0.19,0.20), vec3(0.50,0.50,0.51), greyVar);
-      cloud = mix(cloud, rainGrey, (darkP*0.22 + storm*0.16) * (0.35 + 0.65*dens));
-      vec3 moodTint = sunriseSky*(sunrise*0.28) + sunsetSky*(sunset*0.36) + darkSky*(darkP*0.24) + stormSky*(storm*0.34) + nightSky*(night*0.42);
-      float tintAmt = clamp(sunrise*0.10 + sunset*0.20 + darkP*0.14 + storm*0.18 + night*0.24, 0.0, 0.32);
+      vec3 rainGrey = mix(vec3(0.105,0.115,0.12), vec3(0.39,0.405,0.415), greyVar);
+      cloud = mix(cloud, rainGrey, (darkP*0.32 + storm*0.26) * (0.35 + 0.65*dens));
+      vec3 moodTint = sunriseSky*(sunrise*0.50) + sunsetSky*(sunset*0.52) + darkSky*(darkP*0.30) + stormSky*(storm*0.38) + nightSky*(night*0.42);
+      float tintAmt = clamp(sunrise*0.24 + sunset*0.28 + darkP*0.18 + storm*0.20 + night*0.24, 0.0, 0.38);
       cloud = mix(cloud, mix(cloud, moodTint, 0.58), tintAmt * (0.55 + 0.45*dens));
+      vec3 warmEdgeTint = mix(vec3(1.0,0.54,0.25), vec3(0.90,0.31,0.25), sunset);
+      float warmScene = max(sunrise, sunset);
+      cloud = mix(cloud, warmEdgeTint, edge * warmScene * (0.18 + 0.18*brightness));
       vec3 atmosphericCloud=mix(cloud,vec3(0.50,0.54,0.58),distanceDepth*0.10*(1.0-storm*0.8)*(1.0-night));
       cloud=mix(cloud,atmosphericCloud,distanceDepth*(0.45-darkP*0.10-storm*0.18-night*0.12));
       cloud+=lit*edge*(0.36+uAudioSlow.z*0.20*uIntensity + pulse*0.035);
@@ -235,11 +242,11 @@
       vec3 flashCenter=ro+forward*82.0+right*(sin(uTime*0.17+uSeed.x)*34.0)+up*(cos(uTime*0.13+uSeed.y)*18.0);
       vec3 fd=(p-flashCenter)/vec3(42.0,30.0,48.0);
       float localFlash=exp(-dot(fd,fd)*2.6);
-      cloud+=vec3(1.00,0.66,0.16)*lightning*localFlash*dens*(0.32+edge*1.20+(1.0-interior)*0.24);
+      cloud+=vec3(0.84,0.88,0.92)*lightning*localFlash*dens*(0.42+edge*1.28+(1.0-interior)*0.28);
 
       float sunFacing=sunDot*sunDot;
-      float sunEdge=edge*(0.10+sunFacing*0.72)*sunPresence;
-      float sunInteriorGlow=(1.0-interior)*pow(sunDot,4.0)*sunPresence*0.014;
+      float sunEdge=edge*(0.10+sunFacing*0.82)*sunPresence;
+      float sunInteriorGlow=(1.0-interior)*pow(sunDot,4.0)*sunPresence*(0.014 + sunrise*0.010);
       float sunlightBounce=sunlight*(0.24+sunFacing*0.62)*(1.0-interior)*(0.52+edge*1.85);
       float musicSun=0.92+brightness*0.24+uAudioSlow.z*0.15+pulse*0.018;
       cloud+=sunColor*(sunEdge*(0.36+sunlight*0.34)+sunInteriorGlow+sunlightBounce*0.20)*musicSun*(1.0 - sunset*0.18 - night*0.50);
@@ -318,6 +325,11 @@
   const transitionFrom = new Float32Array(8);
 
   let objectURL = null;
+  let playlist = [];
+  let playlistIndex = 0;
+  let playlistShuffle = false;
+  let shuffledOrder = [];
+  let shuffledPosition = 0;
   let audioCtx = null;
   let sourceNode = null;
   let analyser = null;
@@ -485,6 +497,69 @@
     nextDecision=now + transitionDuration + dwellAfterTransition;
   }
 
+  function resetAudioCalibration() {
+    calibrated = false;
+    if (prevFreq) prevFreq.fill(0);
+    Object.assign(A, {
+      bass:.5, mid:.5, high:.5, overall:.5, brightness:.5, flux:.0, pulse:.0, activity:.0,
+      slowBass:.5, slowMid:.5, slowHigh:.5, slowOverall:.5,
+      baseBass:.1, baseMid:.1, baseHigh:.1, baseOverall:.1, baseFlux:.06, baseBright:.2,
+      devBass:.08, devMid:.08, devHigh:.08, devOverall:.08, devFlux:.04, devBright:.05
+    });
+  }
+
+  function rebuildShuffleOrder() {
+    shuffledOrder = playlist.map((_,i)=>i);
+    for(let i=shuffledOrder.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [shuffledOrder[i],shuffledOrder[j]]=[shuffledOrder[j],shuffledOrder[i]];
+    }
+    const currentPos=shuffledOrder.indexOf(playlistIndex);
+    if(currentPos>0){
+      [shuffledOrder[0],shuffledOrder[currentPos]]=[shuffledOrder[currentPos],shuffledOrder[0]];
+    }
+    shuffledPosition=0;
+  }
+
+  function updatePlaylistUI(){
+    const count=playlist.length;
+    prevTrackBtn.disabled=count<2;
+    nextTrackBtn.disabled=count<2;
+    playlistShuffleBtn.disabled=count<2;
+    playlistShuffleBtn.setAttribute('aria-pressed',playlistShuffle?'true':'false');
+    if(!count){ playlistInfo.textContent='Single track or playlist'; return; }
+    playlistInfo.textContent=count===1 ? '1 track' : `${playlistIndex+1} of ${count} tracks · ${playlistShuffle?'shuffle':'sequence'}`;
+  }
+
+  function loadPlaylistTrack(index, {autoplay=false, resetVisual=false}={}) {
+    if(!playlist.length) return;
+    playlistIndex=((index%playlist.length)+playlist.length)%playlist.length;
+    const file=playlist[playlistIndex];
+    if(objectURL) URL.revokeObjectURL(objectURL);
+    objectURL=URL.createObjectURL(file);
+    audio.src=objectURL;
+    fileName.textContent=file.name;
+    seek.value=0; timeNow.textContent='0:00'; timeTotal.textContent='0:00';
+    resetAudioCalibration();
+    if(resetVisual){
+      hasStarted=false; frozenTime=0; previewInitialized=false; resetJourney();
+    }
+    updatePlaylistUI();
+    if(autoplay) startPlayback();
+  }
+
+  function advanceTrack(direction=1, autoplay=true){
+    if(playlist.length<2) return;
+    if(playlistShuffle){
+      shuffledPosition += direction;
+      if(shuffledPosition>=shuffledOrder.length){ rebuildShuffleOrder(); shuffledPosition=0; }
+      if(shuffledPosition<0){ rebuildShuffleOrder(); shuffledPosition=shuffledOrder.length-1; }
+      loadPlaylistTrack(shuffledOrder[shuffledPosition], {autoplay, resetVisual:false});
+    } else {
+      loadPlaylistTrack(playlistIndex+direction, {autoplay, resetVisual:false});
+    }
+  }
+
   function resetJourney() {
     seed=[Math.random()*100,Math.random()*100];
     const startScene = manualScene === null ? 1 : manualScene;
@@ -494,14 +569,8 @@
     for(let i=0;i<8;i++) transitionFrom[i]=sceneWeights[i];
     nextDecision=transitionStart+72;
     camera.x=0; camera.y=0; camera.z=0; travel=0; yaw=0; pitch=0;
-    calibrated = false;
     previewInitialized = false;
-    Object.assign(A, {
-      bass:.5, mid:.5, high:.5, overall:.5, brightness:.5, flux:.0, pulse:.0, activity:.0,
-      slowBass:.5, slowMid:.5, slowHigh:.5, slowOverall:.5,
-      baseBass:.1, baseMid:.1, baseHigh:.1, baseOverall:.1, baseFlux:.06, baseBright:.2,
-      devBass:.08, devMid:.08, devHigh:.08, devOverall:.08, devFlux:.04, devBright:.05
-    });
+    resetAudioCalibration();
     sceneEl.textContent=manualScene === null ? SCENES[1] : SCENES[manualScene];
     statusEl.textContent='Loaded — press play';
   }
@@ -534,7 +603,7 @@
   function updateCamera(t,dt) {
     const desiredYaw=Math.sin(t*0.033+seed[0])*0.44+Math.sin(t*0.011+seed[1])*0.28 + (A.slowMid-0.5)*0.07;
     yaw=expSmooth(yaw,desiredYaw,0.26 + A.activity*0.15,dt);
-    const speedBase=(11.8 + A.slowMid*3.0 + A.slowHigh*0.7 + A.slowOverall*1.4 + A.activity*0.75 + A.pulse*0.12) * 1.15;
+    const speedBase=(10.9 + A.slowMid*2.7 + A.slowHigh*0.6 + A.slowOverall*1.25 + A.activity*0.62 + A.pulse*0.10) * 1.12;
     const speed=speedBase*parseFloat(speedSlider.value);
     const direction=yaw+Math.sin(t*0.047+seed[1])*0.10;
     const lateral=(Math.sin(t*0.071+seed[0])*0.70+Math.sin(t*0.023+seed[1])*0.30)*(0.78 + A.activity*0.28);
@@ -582,7 +651,7 @@
     if (playing) {
       analyseAudio(dt);
       updateScenes(now,dt);
-      frozenTime = isFinite(audio.currentTime) ? audio.currentTime : frozenTime + dt;
+      frozenTime += dt;
       updateCamera(frozenTime,dt);
     } else {
       ensurePreviewFrame();
@@ -636,19 +705,18 @@
   }
 
   fileInput.addEventListener('change', async e => {
-    const f=e.target.files && e.target.files[0]; if(!f) return;
-    if(objectURL) URL.revokeObjectURL(objectURL);
-    objectURL=URL.createObjectURL(f);
-    audio.src=objectURL;
-    hasStarted = false;
-    frozenTime = 0;
-    previewInitialized = false;
-    fileName.textContent=f.name;
+    const files=Array.from(e.target.files || []).filter(f=>f.type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|flac|ogg)$/i.test(f.name));
+    if(!files.length) return;
+    playlist=files;
+    playlistIndex=0;
+    playlistShuffle=false;
+    shuffledOrder=[]; shuffledPosition=0;
     playBtn.disabled=false;
     seek.disabled=false;
-    resetJourney();
     ensureAudioGraph();
     if(audioCtx.state==='suspended') await audioCtx.resume();
+    loadPlaylistTrack(0,{autoplay:false, resetVisual:true});
+    statusEl.textContent=files.length>1 ? `Playlist loaded · ${files.length} tracks` : 'Loaded — press play';
   });
 
   playBtn.addEventListener('click', async () => {
@@ -656,11 +724,18 @@
   });
   audio.addEventListener('play',()=>{ playBtn.textContent='Ⅱ'; if (!calibrated) statusEl.textContent='Calibrating'; else statusEl.textContent=manualScene === null ? 'DRIFTING · AUTO' : `Scene locked · ${SCENES[manualScene]}`; });
   audio.addEventListener('pause',()=>{ playBtn.textContent='▶'; statusEl.textContent=audio.currentTime>0?'Paused':'Ready'; });
-  audio.addEventListener('ended',()=>{ playBtn.textContent='▶'; statusEl.textContent='Finished'; calibrated=false; });
+  audio.addEventListener('ended',()=>{ playBtn.textContent='▶'; calibrated=false; if(playlist.length>1 && !audio.loop){ advanceTrack(1,true); } else { statusEl.textContent='Finished'; } });
+  prevTrackBtn.addEventListener('click',()=>advanceTrack(-1,!audio.paused));
+  nextTrackBtn.addEventListener('click',()=>advanceTrack(1,!audio.paused));
+  playlistShuffleBtn.addEventListener('click',()=>{
+    playlistShuffle=!playlistShuffle;
+    if(playlistShuffle) rebuildShuffleOrder();
+    updatePlaylistUI();
+  });
   loopBtn.addEventListener('click',()=>{
     audio.loop=!audio.loop; loopBtn.setAttribute('aria-pressed',audio.loop?'true':'false');
   });
-  seek.addEventListener('input',()=>{ if(isFinite(audio.duration)){ audio.currentTime=parseFloat(seek.value); if(hasStarted) frozenTime=audio.currentTime; } });
+  seek.addEventListener('input',()=>{ if(isFinite(audio.duration)) audio.currentTime=parseFloat(seek.value); });
   sceneMode.addEventListener('change',()=>{
     manualScene = sceneMode.value === 'auto' ? null : Number(sceneMode.value);
     const now = performance.now()/1000;
@@ -716,5 +791,6 @@
   audio.addEventListener('play',showUI);
   resetJourney();
   statusEl.textContent='Waiting for music';
+  updatePlaylistUI();
   showUI();
 })();

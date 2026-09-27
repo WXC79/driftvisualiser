@@ -126,3 +126,14 @@ input[type="range"] { width:100%; accent-color:#e8ebee; }
     max-height:calc(100dvh - max(14px, env(safe-area-inset-top)) - max(14px, env(safe-area-inset-bottom)) - 12px);
   }
 }
+
+.playlistInfo { color:rgba(255,255,255,.38); font-size:9px; margin:-8px 2px 12px; letter-spacing:.05em; }
+.transport { flex-wrap:wrap; }
+.transport .iconButton { min-width:52px; }
+@media (max-width:520px) {
+  .transport { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .transport .iconButton { min-width:0; padding:0; font-size:16px; }
+}
+@media (max-width:740px) and (orientation:landscape), (max-height:540px) {
+  .transport { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+}

@@ -1,17 +1,15 @@
-# DRIFT 12.11 — Scene colour integration build
+# DRIFT 12.12 — Playlist + atmosphere build
 
-This update keeps the 12.10 pacing and Home Screen behaviour, but refines scene tonality and the way clouds inherit colour from the environment.
+## New in this build
 
-## Main changes
+- Select one track or many tracks at once.
+- Multiple tracks play sequentially by default.
+- Playlist shuffle toggle plus previous/next track controls.
+- Track changes preserve the visual journey instead of restarting it.
+- Thunderstorm is darker and weightier, with darker cloud bodies so lightning reads more clearly without excessive contrast.
+- Dark Cloud gets deeper greys, more rain-like weight, more mist/grain, and a greyer backing.
+- Sunrise and Sunset cloud edges inherit more of the scene pigment.
+- Sunrise uses richer orange/coral/pink/gold inspiration from real sunrise cloud references.
+- Cloud evolution and forward travel are slightly slower for more mass and scale.
 
-- Thunderstorm background is deeper and weightier.
-- Night has more grain / mist / haze.
-- Night and Sunset are less likely to generate bright bleached-white clouds.
-- Clouds borrow more pigment from the current scene, so they feel more affected by the surrounding light and colour.
-- Night remains more fully night, with reduced blue-sky leakage.
-
-## Update GitHub Pages
-
-Replace the files in your repo root with the contents of this package and commit.
-
-The service-worker cache name has been updated so Home Screen installs should pick up the new version more reliably.
+All selected music remains local to the browser.
