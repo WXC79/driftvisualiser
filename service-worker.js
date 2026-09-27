@@ -1,9 +1,9 @@
-const CACHE_NAME = 'drift-13-6-v1';
+const CACHE_NAME = 'drift-13-7-v1';
 const CORE = [
   './',
   './index.html',
-  './style.css?v=13.6',
-  './app.js?v=13.6',
+  './style.css?v=13.7',
+  './app.js?v=13.7',
   './manifest.webmanifest',
   './apple-touch-icon.png',
   './icon-192.png',
@@ -28,11 +28,20 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
+
+  const url = new URL(event.request.url);
+  const isAudio = /\.(mp3|m4a|aac|wav|flac|ogg)$/i.test(url.pathname);
+  const isRange = event.request.headers.has('range');
+
+  // Important for iOS/Safari media playback: let the browser handle audio and
+  // byte-range requests natively. Do not put media responses through Cache API.
+  if (isAudio || isRange) return;
+
   event.respondWith(
     fetch(event.request)
       .then(response => {
         const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy)).catch(()=>{});
         return response;
       })
       .catch(() => caches.match(event.request))

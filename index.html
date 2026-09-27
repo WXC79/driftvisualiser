@@ -10,8 +10,8 @@
   <meta name="apple-mobile-web-app-title" content="DRIFT" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
-  <meta name="description" content="DRIFT 13.6 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
-  <title>DRIFT 13.6 — Generative Music Visualiser</title>
+  <meta name="description" content="DRIFT 13.7 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
+  <title>DRIFT 13.7 — Generative Music Visualiser</title>
   <script>
     (function(){
       function standalone(){
@@ -41,7 +41,7 @@
       });
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=13.6" />
+  <link rel="stylesheet" href="style.css?v=13.7" />
 </head>
 <body>
   <canvas id="gl"></canvas>
@@ -50,7 +50,7 @@
   <main id="ui" class="ui visible">
     <section class="panel" id="landing">
       <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
-      <div class="brand">DRIFT 13.6</div>
+      <div class="brand">DRIFT 13.7</div>
       <h1>GENERATIVE CLOUD VISUALISER</h1>
       <p class="lede">Play the showcase track, or choose music from your device. Your own files stay local: nothing is uploaded.</p>
 
@@ -108,8 +108,8 @@
     </section>
   </main>
 
-  <audio id="audio" preload="metadata" src="./the-cloud-chris-weeks.mp3"></audio>
-  <script src="app.js?v=13.6"></script>
+  <audio id="audio" preload="metadata" playsinline src="./the-cloud-chris-weeks.mp3"></audio>
+  <script src="app.js?v=13.7"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));

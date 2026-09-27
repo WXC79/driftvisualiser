@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '13.6';
+  const DRIFT_BUILD = '13.7';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -737,6 +737,7 @@
   }
 
   let screenWakeLock=null;
+  let backgroundGuarded=false;
 
   async function requestScreenWakeLock(){
     if(!('wakeLock' in navigator) || document.visibilityState!=='visible' || audio.paused) return;
@@ -797,29 +798,34 @@
   window.addEventListener('focus',syncTransportState);
 
   async function startPlayback(){
-    ensureAudioGraph();
     hasStarted=true;
     backgroundGuarded=false;
     audio.muted=false;
 
-    // On iOS, initiate media playback immediately in the user's tap gesture.
-    // Awaiting AudioContext.resume() first can consume the transient user activation
-    // and cause the subsequent audio.play() to be rejected.
-    let playPromise;
     try {
-      if(usingShowcaseTrack && (!audio.src || audio.error)){
+      // Keep the showcase on a plain same-origin MP3 URL so iOS can use native
+      // media loading/range requests. Never wait on Web Audio before starting it.
+      if(usingShowcaseTrack && audio.getAttribute('src') !== SHOWCASE_SRC){
         audio.src=SHOWCASE_SRC;
         audio.load();
       }
-      playPromise=audio.play();
-      const resumePromise=(audioCtx && audioCtx.state==='suspended') ? audioCtx.resume() : Promise.resolve();
-      await Promise.all([playPromise, resumePromise]);
+
+      // Start/resume Web Audio without allowing it to block native media playback.
+      try {
+        ensureAudioGraph();
+        if(audioCtx && audioCtx.state==='suspended') audioCtx.resume().catch(()=>{});
+      } catch(graphError) {
+        console.warn('Audio analyser unavailable; continuing native playback',graphError);
+      }
+
+      await audio.play();
       syncTransportState();
-      await requestScreenWakeLock();
+      requestScreenWakeLock();
     } catch(e) {
       console.warn('Playback failed',e);
       syncTransportState();
-      statusEl.textContent='Playback failed — tap Play again';
+      const code=audio.error ? audio.error.code : 0;
+      statusEl.textContent=code ? `Showcase audio error (${code})` : 'Playback failed — tap Play again';
     }
   }
 
@@ -864,6 +870,21 @@
       setTimeout(()=>{ syncTransportState(); transportBusy=false; },80);
     }
   });
+  audio.addEventListener('error',()=>{
+    const code=audio.error ? audio.error.code : 0;
+    console.warn('Media error',code,audio.currentSrc);
+    if(usingShowcaseTrack){
+      statusEl.textContent=code ? `Showcase audio error (${code})` : 'Showcase audio unavailable';
+    }
+    syncTransportState();
+  });
+
+  audio.addEventListener('canplaythrough',()=>{
+    if(usingShowcaseTrack && audio.paused && audio.currentTime===0){
+      statusEl.textContent='Showcase ready — press play';
+    }
+  });
+
   audio.addEventListener('loadedmetadata',()=>{
     if(isFinite(audio.duration) && audio.duration>0){
       seek.max=audio.duration;

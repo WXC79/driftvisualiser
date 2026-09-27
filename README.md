@@ -1,31 +1,20 @@
-# DRIFT 13.6 — Showcase MP3 + Pinned Initial Menu
+# DRIFT 13.7 — Showcase Playback Fix
 
-Built from the no-touch version 13 line.
+This build targets the showcase-audio failure seen on iPhone.
 
-Showcase audio:
-- The Cloud — Chris Weeks
-- real MP3 at 128 kbps
-- bundled file is about 18.7 MB, keeping the full GitHub package below 25 MB
-- no autoplay
-- user audio immediately replaces the showcase for the current session
-
-Playback fix:
-- on iPhone/iOS, audio.play() is initiated immediately inside the Play-button gesture
-- AudioContext resume happens alongside playback rather than before it
-- this avoids losing iOS user activation while waiting for the audio context
-- showcase audio is explicitly loaded on startup
-
-Initial menu behavior:
-- the menu no longer auto-hides when DRIFT first opens
-- it remains visible indefinitely until the user presses X or taps outside the panel
-- after that first dismissal, the existing normal auto-hide behavior resumes
-- double-tap still toggles the controls
+Changes:
+- The Cloud — Chris Weeks is now a 160 kbps MP3 (higher quality than the 128 kbps test).
+- MP3 remains below GitHub's 25 MB browser-upload limit.
+- Service worker now completely bypasses audio files and HTTP Range requests.
+  This lets Safari/iOS handle MP3 streaming and byte-range requests natively.
+- Playback no longer waits on Web Audio / analyser setup.
+- Added explicit media-error reporting in the DRIFT status line.
+- Initial menu remains pinned until X or outside-panel tap.
 
 Preserved:
 - no touch-cloud system
 - Night fix
-- portrait fullscreen workaround
-- transport-state fixes
+- portrait fullscreen fix
+- improved transport-state handling
 - background-audio return guard
-- sustained-rhythm response
-- current icon/logo
+- sustained-rhythm visual response
