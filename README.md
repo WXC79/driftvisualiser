@@ -1,10 +1,14 @@
-# DRIFT 12.11.14 — Sunlight Beams compile fix
+# DRIFT 12.11.15 — Sunlight Weight + Visible Beams
 
-This is 12.11.13 with the shader compile error corrected.
+Built from 12.11.14.
 
-Cause:
-- The new sunbeam code used `cloudImmersion` before GLSL had declared it.
-- The declaration is now above the sunbeam block.
-- The later duplicate declaration was removed.
+Sunlight changes:
+- reduces whiteout and brings cloud weight back
+- restores more internal cloud texture and tonal variation
+- keeps cloud bodies in off-white / cream / pale warm grey instead of bleaching toward flat white
+- strengthens yellow-gold edge shimmer and sparkle so the sunlight reads on the cloud edges
+- makes the intermittent sunbeam / sun-haze event more visible and easier to notice
+- reduces the broad final scene lift so the clouds keep mass and structure
 
-No visual tuning was otherwise changed from 12.11.13.
+Night and the other scene tuning remain unchanged.
+No touchscreen interaction is included in this build.

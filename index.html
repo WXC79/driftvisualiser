@@ -10,9 +10,9 @@
   <meta name="apple-mobile-web-app-title" content="DRIFT" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <meta name="description" content="DRIFT 12.11.14 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
-  <title>DRIFT 12.11.14 — Generative Music Visualiser</title>
-  <link rel="stylesheet" href="style.css?v=12.11.14" />
+  <meta name="description" content="DRIFT 12.11.15 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
+  <title>DRIFT 12.11.15 — Generative Music Visualiser</title>
+  <link rel="stylesheet" href="style.css?v=12.11.15" />
 </head>
 <body>
   <canvas id="gl"></canvas>
@@ -21,7 +21,7 @@
   <main id="ui" class="ui visible">
     <section class="panel" id="landing">
       <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
-      <div class="brand">DRIFT 12.11.14</div>
+      <div class="brand">DRIFT 12.11.15</div>
       <h1>GENERATIVE CLOUD VISUALISER</h1>
       <p class="lede">Choose music from your device. The file stays local: nothing is uploaded.</p>
 
@@ -66,12 +66,12 @@
         <span id="status">Waiting for music</span>
         <span id="scene">BLUE SKY</span>
       </div>
-      <p class="hint">Sunlight refinement: adds intermittent subtle sunbeams / sun-haze bursts, stronger yellow-gold sparkle on sun-facing cloud edges, and slightly reduces flat whiteout while keeping the brighter sun-filled atmosphere.</p>
+      <p class="hint">Sunlight refinement: restores cloud weight and texture, reduces whiteout, strengthens visible warm yellow edge-light and sparkle, and makes intermittent sunbeams easier to perceive.</p>
     </section>
   </main>
 
   <audio id="audio" preload="metadata"></audio>
-  <script src="app.js?v=12.11.14"></script>
+  <script src="app.js?v=12.11.15"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));
