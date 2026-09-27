@@ -1,17 +1,15 @@
-# DRIFT 12.11.9 — Scene Balance
+# DRIFT 12.11.10 — Sunlight Repair
 
-Built directly from the untouched 12.11.8 baseline. No touch-cloud code is included.
+Built from 12.11.9. Night is intentionally unchanged.
 
-Scene changes:
-- SUNLIGHT:
-  - own slightly lighter blue sky
-  - warm yellow atmospheric haze
-  - stronger yellow cloud edge/rim lighting
-  - stronger sunlit cloud bounce so it reads distinctly from Blue Sky
-- NIGHT:
-  - brighter dark-blue/inky background so the scene remains visible in a bright room
-  - brighter cloud bodies without turning them white
-  - stronger moonlit edges, bounce and atmospheric haze
-  - subtle right-side density compensation in landscape to reduce the left-heavy appearance
+Sunlight changes:
+- substantially brighter overall scene
+- lighter, more sun-saturated blue background
+- broad warm yellow haze in the atmosphere
+- cloud bodies pushed to off-white rather than grey
+- white highlights restored
+- much stronger warm yellow rim / edge light
+- brighter sunlight bounce through cloud edges and thinner regions
 
-All benchmark movement/pacing remains unchanged from 12.11.8.
+All other scene tuning and benchmark movement/pacing remain unchanged.
+No touchscreen interaction is included in this build.

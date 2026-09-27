@@ -1,9 +1,9 @@
-const CACHE_NAME = 'drift-12-11-9-v1';
+const CACHE_NAME = 'drift-12-11-10-v1';
 const CORE = [
   './',
   './index.html',
-  './style.css?v=12.11.9',
-  './app.js?v=12.11.9',
+  './style.css?v=12.11.10',
+  './app.js?v=12.11.10',
   './manifest.webmanifest',
   './apple-touch-icon.png',
   './icon-192.png',
