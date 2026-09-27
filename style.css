@@ -116,3 +116,13 @@ input[type="range"] { width:100%; accent-color:#e8ebee; }
   .settings label { grid-template-columns:100px 1fr; gap:10px; }
   .sceneModeRow select { width:100%; min-width:0; }
 }
+
+@media (display-mode: standalone) {
+  .ui {
+    padding-top:max(14px, env(safe-area-inset-top));
+    padding-bottom:max(14px, env(safe-area-inset-bottom));
+  }
+  .panel {
+    max-height:calc(100dvh - max(14px, env(safe-area-inset-top)) - max(14px, env(safe-area-inset-bottom)) - 12px);
+  }
+}

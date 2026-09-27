@@ -20,6 +20,12 @@
   const grainSlider = document.getElementById('grain');
   const sceneMode = document.getElementById('sceneMode');
   const closeUiBtn = document.getElementById('closeUiBtn');
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if (isStandalone) {
+    fullBtn.title = 'Running as a Home Screen web app';
+    fullBtn.setAttribute('aria-label', 'Home Screen app mode');
+  }
+
 
   const gl = canvas.getContext('webgl2', {
     antialias: false,

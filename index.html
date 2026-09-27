@@ -7,8 +7,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="description" content="DRIFT 12.7 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
-  <title>DRIFT 12.7 — Generative Music Visualiser</title>
+  <meta name="apple-mobile-web-app-title" content="DRIFT" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <meta name="description" content="DRIFT 12.8 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
+  <title>DRIFT 12.8 — Generative Music Visualiser</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -18,7 +21,7 @@
   <main id="ui" class="ui visible">
     <section class="panel" id="landing">
       <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
-      <div class="brand">DRIFT 12.7</div>
+      <div class="brand">DRIFT 12.8</div>
       <h1>GENERATIVE CLOUD VISUALISER</h1>
       <p class="lede">Choose music from your device. The file stays local: nothing is uploaded.</p>
 
@@ -63,11 +66,16 @@
         <span id="status">Waiting for music</span>
         <span id="scene">BLUE SKY</span>
       </div>
-      <p class="hint">Shows a still preview before playback. AUTO is the default and follows the music. On iPhone, the fullscreen button gives the best available browser fullscreen behaviour, but true app-like fullscreen is best via Add to Home Screen.</p>
+      <p class="hint">Shows a still preview before playback. AUTO is the default and follows the music. For the cleanest phone experience, add DRIFT to your Home Screen and open it as a web app.</p>
     </section>
   </main>
 
   <audio id="audio" preload="metadata"></audio>
   <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));
+    }
+  </script>
 </body>
 </html>
