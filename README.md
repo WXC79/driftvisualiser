@@ -1,13 +1,10 @@
-# DRIFT 12.11.13 — Sunlight Beams + Sparkle
+# DRIFT 12.11.14 — Sunlight Beams compile fix
 
-Built from 12.11.12.
+This is 12.11.13 with the shader compile error corrected.
 
-Sunlight changes:
-- adds intermittent subtle sunbeam / sun-haze bursts that appear and disappear sporadically
-- boosts yellow-gold sparkle on sun-facing cloud edges
-- increases warm yellow highlight visibility so the clouds no longer read as only white
-- slightly reduces flat white body lift so cloud texture survives better
-- preserves the brighter sun-filled atmosphere from 12.11.12
+Cause:
+- The new sunbeam code used `cloudImmersion` before GLSL had declared it.
+- The declaration is now above the sunbeam block.
+- The later duplicate declaration was removed.
 
-Night and the other scene tuning remain unchanged.
-No touchscreen interaction is included in this build.
+No visual tuning was otherwise changed from 12.11.13.

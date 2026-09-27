@@ -301,6 +301,7 @@
     }
 
     vec3 base=accum+sky*trans;
+    float cloudImmersion=1.0-trans;
     float sunCycle=pow(max(0.0,sin(uTime*0.035+uSeed.x*1.41+uSeed.y*0.53)),6.0);
     float sunlightHaze=pow(sunDot,1.65)*(sunlight*(0.085+sunCycle*0.120) + sunrise*(0.018+sunCycle*0.062));
     float sunlightBurst=pow(max(0.0,sin(uTime*0.022+uSeed.x*1.17+uSeed.y*0.39)),10.0);
@@ -320,7 +321,6 @@
     float fineGrain=noise2(grainUV1+vec2(uTime*0.13,-uTime*0.09)+uSeed*1.7)-0.5;
     float microGrain=noise2(grainUV2+vec2(-uTime*0.41,uTime*0.33)+uSeed*4.1)-0.5;
     float dotNoise=smoothstep(0.84,1.0,noise2(grainUV2*1.73+vec2(uTime*0.71,-uTime*0.57)+uSeed*7.3));
-    float cloudImmersion=1.0-trans;
     float grainEnvelope=grainState*(0.24+cloudImmersion*0.76)*(0.82+uAudioSlow.z*0.30+activity*0.06);
     base+=fineGrain*grainEnvelope*0.028;
     base+=microGrain*grainEnvelope*0.017;
