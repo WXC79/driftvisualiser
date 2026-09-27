@@ -10,9 +10,9 @@
   <meta name="apple-mobile-web-app-title" content="DRIFT" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <meta name="description" content="DRIFT 12.12.0 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
-  <title>DRIFT 12.12.0 — Generative Music Visualiser</title>
-  <link rel="stylesheet" href="style.css?v=12.12.0" />
+  <meta name="description" content="DRIFT 12.12.1 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
+  <title>DRIFT 12.12.1 — Generative Music Visualiser</title>
+  <link rel="stylesheet" href="style.css?v=12.12.1" />
 </head>
 <body>
   <canvas id="gl"></canvas>
@@ -21,7 +21,7 @@
   <main id="ui" class="ui visible">
     <section class="panel" id="landing">
       <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
-      <div class="brand">DRIFT 12.12.0</div>
+      <div class="brand">DRIFT 12.12.1</div>
       <h1>GENERATIVE CLOUD VISUALISER</h1>
       <p class="lede">Choose music from your device. The file stays local: nothing is uploaded.</p>
 
@@ -67,12 +67,12 @@
         <span id="status">Waiting for music</span>
         <span id="scene">BLUE SKY</span>
       </div>
-      <p class="hint">Touch Clouds prototype: touch and hold on the visual to grow a cloud, drag while holding to keep growing and shape it, then release to leave it in the world. On phones, when Touch Clouds is enabled, use a two-finger tap to reopen the controls.</p>
+      <p class="hint">Touch Clouds prototype: quick double-tap the background to reopen controls; touch and hold to begin growing a cloud, drag while holding to keep growing and shaping it, then release to leave it in the world.</p>
     </section>
   </main>
 
   <audio id="audio" preload="metadata"></audio>
-  <script src="app.js?v=12.12.0"></script>
+  <script src="app.js?v=12.12.1"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));

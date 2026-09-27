@@ -1,21 +1,16 @@
-# DRIFT 12.12.0 — Touch Clouds Prototype 1
+# DRIFT 12.12.1 — Touch Clouds repair pass
 
-Built from the 12.11.8 benchmark.
+Based on 12.12.0.
 
-What is new:
-- Touch Clouds prototype:
-  - touch and hold on the visual to begin generating a cloud
-  - keep holding to grow it
-  - drag while holding to keep generating and shape / stretch it
-  - release to leave the created cloud in the world
-- The created cloud uses the same volumetric cloud aesthetic and scene lighting as the rest of Drift.
-- Added a Touch Clouds toggle in the menu.
-- On touch devices, when Touch Clouds is enabled and the menu is hidden, use a two-finger tap to reopen the controls.
+Fixes:
+- Restores double-tap menu reveal on iPhone/touch devices using a proper tap-vs-hold split:
+  - quick taps = tap / double tap
+  - hold = cloud generation
+- Removed the two-finger reopen gesture from the interaction flow.
+- Added stronger suppression of iPhone text-selection / copy / translate callouts on the visual.
+- Improved fullscreen / viewport fill by sizing the app from the live innerHeight and applying that size to the canvas and overlay.
+- Touch clouds can continue building for longer while held / dragged, with a larger touch-cloud history.
 
-What stayed the same:
-- scene tuning and pacing from 12.11.8
-- menu landscape fitting
-- wake lock support
-- scene/manual controls
-
-This is a first interaction prototype, so the main goal is feel and integration, not final polish.
+What stays the same:
+- touch clouds still grow while being dragged and lock into the scene on release
+- scene tuning and pacing from 12.12.0

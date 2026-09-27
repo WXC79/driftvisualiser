@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '12.12.0';
+  const DRIFT_BUILD = '12.12.1';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -28,6 +28,15 @@
     fullBtn.title = 'Running as a Home Screen web app';
     fullBtn.setAttribute('aria-label', 'Home Screen app mode');
   }
+
+  function updateViewportHeight(){
+    const h = `${window.innerHeight}px`;
+    document.documentElement.style.setProperty('--app-height', h);
+  }
+  updateViewportHeight();
+  window.addEventListener('resize', updateViewportHeight, {passive:true});
+  window.addEventListener('orientationchange', updateViewportHeight, {passive:true});
+  window.addEventListener('pageshow', updateViewportHeight, {passive:true});
 
 
   const gl = canvas.getContext('webgl2', {
@@ -69,8 +78,8 @@
   uniform float uIntensity;
   uniform float uGrain;
   uniform vec2 uSeed;
-  uniform vec4 uTouchClouds[16];     // xyz center, w radius
-  uniform vec4 uTouchCloudMeta[16];  // x strength, y seedA, z seedB, w reserved;
+  uniform vec4 uTouchClouds[32];     // xyz center, w radius
+  uniform vec4 uTouchCloudMeta[32];  // x strength, y seedA, z seedB, w reserved;
 
   float hash21(vec2 p){
     p=fract(p*vec2(123.34,456.21));
@@ -107,7 +116,7 @@
     float field=large*0.68+body*0.24+detail*0.08;
 
     float touchField=0.0;
-    for(int i=0;i<16;i++){
+    for(int i=0;i<32;i++){
       vec4 tc=uTouchClouds[i];
       vec4 tm=uTouchCloudMeta[i];
       float strength=tm.x;
@@ -377,7 +386,7 @@
   let seed = [Math.random()*100, Math.random()*100];
   const transitionFrom = new Float32Array(8);
 
-  const MAX_TOUCH_CLOUDS = 16;
+  const MAX_TOUCH_CLOUDS = 32;
   const touchClouds = new Float32Array(MAX_TOUCH_CLOUDS * 4);
   const touchCloudMeta = new Float32Array(MAX_TOUCH_CLOUDS * 4);
   let touchCloudHead = 0;
@@ -452,7 +461,7 @@
     if(!touchStroke.active || !touchCloudMode) return;
     touchStroke.holdTime += dt;
     touchStroke.emitTimer += dt;
-    if(touchStroke.emitTimer < 0.075) return;
+    if(touchStroke.emitTimer < 0.060) return;
     touchStroke.emitTimer = 0;
 
     const world = mapTouchToWorld(touchStroke.clientX, touchStroke.clientY);
@@ -467,10 +476,10 @@
     const dragSpeed = dragDistance / Math.max(dt, 0.016);
     touchStroke.speed = dragSpeed;
 
-    const holdGrow = Math.min(1, touchStroke.holdTime / 1.05);
-    const dragPenalty = Math.min(1, dragSpeed / 40);
-    const radius = 7.0 + holdGrow * 8.0 + (1.0-dragPenalty) * 3.0;
-    const strength = Math.max(0.34, Math.min(0.96, 0.40 + holdGrow * 0.34 + (1.0-dragPenalty)*0.18));
+    const holdGrow = Math.min(3.0, touchStroke.holdTime / 0.95);
+    const dragPenalty = Math.min(1, dragSpeed / 42);
+    const radius = 6.8 + holdGrow * 4.4 + (1.0-dragPenalty) * 2.6;
+    const strength = Math.max(0.34, Math.min(0.98, 0.40 + Math.min(holdGrow,1.6) * 0.20 + (1.0-dragPenalty)*0.18));
 
     if(touchStroke.prevWorld){
       const segment = Math.hypot(
@@ -498,6 +507,19 @@
     touchStroke.pointerId = null;
     touchStroke.prevWorld = null;
   }
+
+  function suppressVisualDefault(e){
+    const t = e.target;
+    if(t===canvas || (t && t.id==='vignette')){
+      if(e.cancelable) e.preventDefault();
+    }
+  }
+  document.addEventListener('contextmenu', suppressVisualDefault, {capture:true});
+  document.addEventListener('selectstart', suppressVisualDefault, {capture:true});
+  document.addEventListener('gesturestart', suppressVisualDefault, {capture:true});
+  canvas.addEventListener('touchstart', suppressVisualDefault, {passive:false});
+  canvas.addEventListener('touchmove', suppressVisualDefault, {passive:false});
+  canvas.addEventListener('touchend', suppressVisualDefault, {passive:false});
 
   let objectURL = null;
   let audioCtx = null;
@@ -849,6 +871,9 @@
       // iOS/Home Screen can suspend media without reliably updating the transport UI.
       // Explicitly pause when leaving so the visual state and button never disagree.
       if(!audio.paused) audio.pause();
+      endTouchStroke();
+      pendingTouchTap = false;
+      pendingPointerId = null;
       syncTransportState();
     } else {
       const playing=syncTransportState();
@@ -900,7 +925,11 @@
     touchCloudsToggle.addEventListener('change',()=>{
       touchCloudMode = !!touchCloudsToggle.checked;
       canvas.style.touchAction = touchCloudMode ? 'none' : 'manipulation';
-      if(!touchCloudMode) endTouchStroke();
+      if(!touchCloudMode){
+        endTouchStroke();
+        pendingTouchTap = false;
+        pendingPointerId = null;
+      }
       statusEl.textContent = touchCloudMode ? 'Touch clouds enabled' : 'Touch clouds disabled';
       scheduleUiHide();
     });
@@ -955,6 +984,33 @@
   closeUiBtn.addEventListener('click',e=>{ e.stopPropagation(); hideUI(); });
 
   let lastRevealTap=0;
+  let pendingTouchStart=0;
+  let pendingTouchTap=false;
+  let pendingTouchX=0;
+  let pendingTouchY=0;
+  let pendingStartX=0;
+  let pendingStartY=0;
+  let pendingPointerId=null;
+  const HOLD_TO_DRAW_MS = 170;
+  const TAP_MAX_MS = 220;
+  const TAP_REVEAL_MS = 360;
+  const MOVE_SLOP_PX = 8;
+
+  function beginTouchStroke(e){
+    touchStroke.active = true;
+    touchStroke.pointerId = e.pointerId;
+    touchStroke.clientX = e.clientX;
+    touchStroke.clientY = e.clientY;
+    touchStroke.holdTime = 0;
+    touchStroke.emitTimer = 0.061; // stamp immediately
+    touchStroke.prevWorld = null;
+    touchStroke.seedA = Math.random()*100.0;
+    touchStroke.seedB = Math.random()*100.0;
+    if(canvas.setPointerCapture){
+      try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+    }
+  }
+
   if(!isTouchDevice){
     document.addEventListener('pointermove',showUI,{passive:true});
     document.addEventListener('pointerdown',e=>{
@@ -964,55 +1020,81 @@
     document.addEventListener('pointerdown',e=>{
       const bg = (e.target===canvas || e.target.id==='vignette');
       if(!bg) return;
+      if(e.pointerType && e.pointerType !== 'touch') return;
 
       if(touchCloudMode && ui.classList.contains('visible')===false){
-        touchStroke.active = true;
-        touchStroke.pointerId = e.pointerId;
-        touchStroke.clientX = e.clientX;
-        touchStroke.clientY = e.clientY;
-        touchStroke.holdTime = 0;
-        touchStroke.emitTimer = 0.076; // stamp immediately
-        touchStroke.prevWorld = null;
-        touchStroke.seedA = Math.random()*100.0;
-        touchStroke.seedB = Math.random()*100.0;
-        if(canvas.setPointerCapture){
-          try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
-        }
+        pendingTouchStart = performance.now();
+        pendingTouchTap = true;
+        pendingTouchX = e.clientX;
+        pendingTouchY = e.clientY;
+        pendingStartX = e.clientX;
+        pendingStartY = e.clientY;
+        pendingPointerId = e.pointerId;
+        if(e.cancelable) e.preventDefault();
         return;
       }
 
       const now = performance.now();
-      if(now-lastRevealTap < 360){
+      if(now-lastRevealTap < TAP_REVEAL_MS){
         showUI();
         lastRevealTap = 0;
       } else {
         lastRevealTap = now;
       }
-    },{passive:true});
+    },{passive:false});
 
     document.addEventListener('pointermove',e=>{
-      if(!touchStroke.active || e.pointerId!==touchStroke.pointerId) return;
-      touchStroke.clientX = e.clientX;
-      touchStroke.clientY = e.clientY;
-    },{passive:true});
+      if(touchStroke.active && e.pointerId===touchStroke.pointerId){
+        touchStroke.clientX = e.clientX;
+        touchStroke.clientY = e.clientY;
+        if(e.cancelable) e.preventDefault();
+        return;
+      }
+      if(!pendingTouchTap || e.pointerId!==pendingPointerId) return;
+
+      pendingTouchX = e.clientX;
+      pendingTouchY = e.clientY;
+      const now = performance.now();
+      const moved = Math.hypot(e.clientX-pendingStartX, e.clientY-pendingStartY);
+
+      if((now-pendingTouchStart > HOLD_TO_DRAW_MS && moved > MOVE_SLOP_PX*0.35) || (now-pendingTouchStart > HOLD_TO_DRAW_MS*1.15)){
+        pendingTouchTap = false;
+        beginTouchStroke(e);
+        if(e.cancelable) e.preventDefault();
+      }
+    },{passive:false});
 
     const finishTouchStroke = e => {
       if(touchStroke.active && e.pointerId===touchStroke.pointerId){
         endTouchStroke();
+        if(e.cancelable) e.preventDefault();
+        return;
+      }
+      if(pendingTouchTap && e.pointerId===pendingPointerId){
+        const now = performance.now();
+        const duration = now - pendingTouchStart;
+        const moved = Math.hypot((e.clientX||pendingTouchX)-pendingStartX, (e.clientY||pendingTouchY)-pendingStartY);
+        pendingTouchTap = false;
+        pendingPointerId = null;
+        if(duration <= TAP_MAX_MS && moved <= MOVE_SLOP_PX){
+          if(now-lastRevealTap < TAP_REVEAL_MS){
+            showUI();
+            lastRevealTap = 0;
+          } else {
+            lastRevealTap = now;
+          }
+        }
+        if(e.cancelable) e.preventDefault();
       }
     };
-    document.addEventListener('pointerup',finishTouchStroke,{passive:true});
-    document.addEventListener('pointercancel',finishTouchStroke,{passive:true});
-
-    document.addEventListener('touchstart',e=>{
-      const target=e.target;
-      const bg = (target===canvas || target.id==='vignette');
-      if(!bg) return;
-      if(touchCloudMode && e.touches.length===2){
+    document.addEventListener('pointerup',finishTouchStroke,{passive:false});
+    document.addEventListener('pointercancel',e=>{
+      if(touchStroke.active && e.pointerId===touchStroke.pointerId){
         endTouchStroke();
-        showUI();
-        e.preventDefault();
       }
+      pendingTouchTap = false;
+      pendingPointerId = null;
+      if(e.cancelable) e.preventDefault();
     },{passive:false});
   }
 
