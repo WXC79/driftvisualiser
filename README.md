@@ -1,21 +1,23 @@
-# DRIFT 13.19 — Menu Fix
+# DRIFT 13.20 — Menu + Cache Fix
 
-Built from 13.18.
+Built from 13.19.
 
 Changes:
-- Fixed the desktop X-close behavior. Mouse movement can no longer instantly
-  reopen the menu immediately after it is closed.
-- Menu product name now displays exactly as: D R I F T
+- Desktop X close is now handled on pointerdown and click in capture mode.
+- Mouse movement no longer reopens the controls after closing them.
+- On desktop, click the visual to reopen controls.
+- Menu title is exactly: D R I F T
 - VISUAL SETTINGS turns white on hover/focus.
-- Hovering VISUAL SETTINGS on a mouse/desktop device now shows a compact help
-  popup explaining that it contains scene selection, visual intensity,
-  forward motion and grain controls.
+- VISUAL SETTINGS has a real inline hover tooltip explaining its controls.
+- Added cache-control meta hints.
+- Added `drift-13-20.html`, a versioned test page that bypasses a stale cached
+  root `index.html` when diagnosing GitHub Pages/browser caching.
 
 Preserved:
 - cursor auto-hide
 - browser/fullscreen playback fix
 - playlist support
 - Free Drift
-- home-screen artwork
-- AUTO/manual scenes
+- exact home-screen artwork
+- AUTO/manual scene controls
 - landscape menu fitting

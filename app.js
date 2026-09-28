@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '13.19';
+  const DRIFT_BUILD = '13.20';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -1238,17 +1238,21 @@
     suppressMouseRevealUntil=performance.now()+650;
     ui.classList.remove('visible');
   }
-  closeUiBtn.addEventListener('click',e=>{ e.stopPropagation(); hideUI(); });
+  const closeControls = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    hideUI();
+  };
+  closeUiBtn.addEventListener('pointerdown',closeControls,{capture:true});
+  closeUiBtn.addEventListener('click',closeControls,{capture:true});
 
   let lastRevealTap=0;
   if(!isTouchDevice){
-    document.addEventListener('pointermove',()=>{
-      if(performance.now() < suppressMouseRevealUntil) return;
-      if(!ui.classList.contains('visible')) showUI();
-    },{passive:true});
+    // Desktop: moving the mouse only brings the pointer back.
+    // The menu stays closed until the user deliberately clicks the visual.
     document.addEventListener('pointerdown',e=>{
       if(e.target===canvas || e.target.id==='vignette'){
-        if(performance.now() >= suppressMouseRevealUntil) showUI();
+        if(!ui.classList.contains('visible')) showUI();
       }
     },{passive:true});
   } else {
