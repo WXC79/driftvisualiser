@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '13.12';
+  const DRIFT_BUILD = '13.13';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -21,7 +21,6 @@
   const grainSlider = document.getElementById('grain');
   const sceneMode = document.getElementById('sceneMode');
   const closeUiBtn = document.getElementById('closeUiBtn');
-  const splash = document.getElementById('splash');
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
   if (isStandalone) {
@@ -1024,24 +1023,6 @@
   });
   ui.addEventListener('input',scheduleUiHide,{passive:true});
   audio.addEventListener('play',showUI);
-
-  function enterDrift(){
-    if(!splash || splash.classList.contains('leaving') || splash.classList.contains('hidden')) return;
-    splash.classList.add('leaving');
-    showUI();
-    setTimeout(()=>splash.classList.add('hidden'),440);
-  }
-
-  if(splash){
-    splash.addEventListener('pointerup',enterDrift,{passive:true});
-    splash.addEventListener('click',enterDrift);
-    splash.addEventListener('keydown',e=>{
-      if(e.key==='Enter' || e.key===' '){
-        e.preventDefault();
-        enterDrift();
-      }
-    });
-  }
 
   // Bundled showcase track: always present on a fresh opening, never autoplayed.
   // Choosing a local file replaces it for the current session.

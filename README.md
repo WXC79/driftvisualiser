@@ -1,14 +1,16 @@
-# DRIFT 13.12 — Exact Aligned Splash
+# DRIFT 13.13 — No Splash Screen
 
-The opening lockup has been rebuilt as one vector asset using the approved geometry.
+Built directly from 13.12 with the opening/home splash removed.
 
-Exact alignment:
-- logo width: 177 units
-- DRIFT width: 177 units
-- Touch to Drift width: 177 units
-- all three begin on exactly the same left vertical
-- all three finish on exactly the same right vertical
-- DRIFT and Touch to Drift are vector outlines, not live browser font rendering
-- no JPEG tracing is used
-
-Everything else from 13.11 is preserved.
+Preserved:
+- text-only menu header: Drift / Generative Cloud Visualizer
+- bundled showcase track
+- hard background audio stop on app leave
+- landscape menu fitting
+- double tap visual to toggle controls
+- landscape recommendation helper text
+- no touch-cloud system
+- Night scene fix
+- portrait fullscreen workaround
+- sustained-rhythm response
+- current app icon/logo assets

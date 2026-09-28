@@ -1,16 +1,15 @@
-const CACHE_NAME = 'drift-13-12-v1';
+const CACHE_NAME = 'drift-13-13-v1';
 const CORE = [
   './',
   './index.html',
-  './style.css?v=13.12',
-  './app.js?v=13.12',
+  './style.css?v=13.13',
+  './app.js?v=13.13',
   './manifest.webmanifest',
   './apple-touch-icon.png',
   './icon-192.png',
   './icon-512.png',
   './icon-1024.png',
   './drift-logo-master.svg',
-  './drift-splash-lockup.svg'
 ];
 
 self.addEventListener('install', event => {
