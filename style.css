@@ -276,7 +276,10 @@ html, body, #gl, #vignette, .ui, .panel, button, label {
 }
 
 
-/* DRIFT 13.8 — opening screen + menu polish */
+
+
+
+/* DRIFT 13.9 — exact approved opening lockup */
 .splash {
   position: fixed;
   inset: 0;
@@ -286,50 +289,36 @@ html, body, #gl, #vignette, .ui, .panel, button, label {
   display: grid;
   place-items: center;
   background: #fff;
-  color: #050505;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   user-select: none;
-  transition: opacity .42s ease;
+  transition: opacity .38s ease;
 }
 .splash.leaving { opacity: 0; pointer-events: none; }
 .splash.hidden { display: none; }
 
-.splashMark {
-  width: clamp(154px, 24vw, 206px);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-.splashLogo { display:block; width:100%; height:auto; margin:0; }
-.splashWord,
-.splashPrompt {
-  width:100%;
-  margin:0;
-  color:#090909;
-  white-space:nowrap;
-  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
-  font-weight:400;
-}
-.splashWord {
-  margin-top:9px;
-  font-size:clamp(29px,4.4vw,39px);
-  line-height:1;
-  letter-spacing:.34em;
-}
-.splashPrompt {
-  margin-top:10px;
-  font-size:clamp(14px,2.05vw,18px);
-  line-height:1.15;
-  letter-spacing:.19em;
-}
-@media (orientation: landscape) {
-  .splashMark { width:clamp(142px,13.5vw,188px); }
-  .splashWord { margin-top:7px; font-size:clamp(26px,2.7vw,35px); }
-  .splashPrompt { margin-top:8px; font-size:clamp(12px,1.35vw,16px); }
+/*
+  This is ONE traced vector lockup from the user's approved reference image.
+  Logo, DRIFT, and Touch to Drift therefore cannot drift out of alignment.
+*/
+.splashLockup {
+  display: block;
+  width: min(29vw, 214px);
+  height: auto;
+  max-height: 31vh;
+  object-fit: contain;
 }
 
+/* Landscape: same exact lockup, centered, simply scaled for available height. */
+@media (orientation: landscape) {
+  .splashLockup {
+    width: min(15vw, 190px);
+    max-height: 42vh;
+  }
+}
+
+/* Menu identity */
 .menuBrand {
   display:flex;
   align-items:center;
@@ -360,6 +349,7 @@ html, body, #gl, #vignette, .ui, .panel, button, label {
   letter-spacing:.08em;
 }
 
+/* Strong landscape fit */
 @media (orientation: landscape) and (max-height:520px) {
   .ui {
     align-items:stretch;

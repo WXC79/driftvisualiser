@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '13.8';
+  const DRIFT_BUILD = '13.9';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -778,6 +778,7 @@
     backgroundGuarded=true;
     try {
       audio.muted=true;
+      audio.volume=0;
       if(outputGain) outputGain.gain.value=0;
       audio.pause();
     } catch(e) {}
@@ -806,6 +807,7 @@
     hasStarted=true;
     backgroundGuarded=false;
     audio.muted=false;
+    audio.volume=1;
     if(outputGain) outputGain.gain.value=1;
 
     try {

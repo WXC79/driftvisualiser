@@ -41,16 +41,13 @@
       });
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=13.8" />
+  <link rel="stylesheet" href="style.css?v=13.9" />
 </head>
 <body>
 
   <div id="splash" class="splash" role="button" tabindex="0" aria-label="Touch to enter DRIFT">
-    <div class="splashMark">
-      <img class="splashLogo" src="drift-logo-master.svg" alt="" />
-      <div class="splashWord">DRIFT</div>
-      <div class="splashPrompt">Touch to Drift</div>
-    </div>
+    <img class="splashLockup" src="drift-splash-lockup.svg" alt="DRIFT — Touch to Drift" />
+  </div>
   </div>
   <canvas id="gl"></canvas>
   <div id="vignette"></div>
@@ -121,7 +118,7 @@
   </main>
 
   <audio id="audio" preload="metadata" playsinline src="./the-cloud-chris-weeks.mp3"></audio>
-  <script src="app.js?v=13.8"></script>
+  <script src="app.js?v=13.9"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));

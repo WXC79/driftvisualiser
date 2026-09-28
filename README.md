@@ -1,13 +1,22 @@
-# DRIFT 13.8
+# DRIFT 13.9 — Exact Approved Splash Lockup
 
-- New white opening screen using the existing SVG DRIFT logo and live browser text.
-- Centered in portrait and landscape.
-- Menu version number removed.
-- Menu header: logo + Drift + Generative Cloud Visualizer.
-- Bottom menu copy:
-  - Double tap the visual to toggle controls.
-  - Use landscape mode on your device for the best experience.
-- Landscape menu compaction for short phone screens.
-- Hard background audio stop: mute + Web Audio output gain to zero + pause + AudioContext suspend.
-- Returning never resumes/unmutes automatically; Play is required.
-- Existing 160 kbps showcase MP3 retained.
+This build fixes the opening screen by using a single vector lockup traced directly from the user's approved reference image.
+
+Opening screen:
+- exact approved logo/text proportions and alignment
+- logo + DRIFT + Touch to Drift are one vector asset
+- centered in portrait
+- centered in landscape
+- no independent text scaling, so alignment cannot drift again
+
+Audio:
+- leaving the app now forces:
+  - muted = true
+  - volume = 0
+  - Web Audio output gain = 0
+  - pause()
+  - AudioContext suspend
+- returning does not restore audio
+- explicit Play restores volume/mute/output gain
+
+Everything else from 13.8 is preserved.
