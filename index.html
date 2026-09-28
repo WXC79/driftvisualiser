@@ -41,7 +41,7 @@
       });
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=13.15" />
+  <link rel="stylesheet" href="style.css?v=13.16" />
 </head>
 <body>
   <div id="splash" class="splash" role="button" tabindex="0" aria-label="Touch to Drift">
@@ -61,11 +61,15 @@
       </div>
       <p class="lede">Play the showcase track, choose music from your device, or use Free Drift with no music. Your own files stay local: nothing is uploaded.</p>
 
-      <label class="fileButton" for="fileInput" title="Choose a music file from your device">CHOOSE MUSIC</label>
-      <input id="fileInput" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg" />
-      <p id="fileName" class="filename">The Cloud — Chris Weeks<br><span class="showcaseNote">Default showcase track</span></p>
+      <label class="fileButton" for="fileInput" title="Choose one or more music files from your device">CHOOSE MUSIC</label>
+      <input id="fileInput" type="file" multiple accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg" />
+      <div class="trackInfo">
+        <p id="fileName" class="filename">The Cloud — Chris Weeks<br><span class="showcaseNote">Default showcase track</span></p>
+        <span id="queueCount" class="queueCount" aria-live="polite">SHOWCASE</span>
+      </div>
 
       <div class="transport">
+        <button id="prevBtn" class="iconButton playlistNav" aria-label="Previous track" title="Previous track">‹</button>
         <button id="playBtn" class="iconButton cloudTransport" aria-label="Play" title="Play or pause the selected music" data-state="play">
           <svg class="cloudTransportSvg" viewBox="0 0 96 64" aria-hidden="true">
             <path class="cloudShape" d="M22 52h50c10 0 18-7 18-16 0-8-7-15-16-16C71 10 62 4 52 4 40 4 30 12 27 23c-2-1-5-2-8-2C10 21 4 28 4 36s7 16 18 16z"/>
@@ -76,6 +80,7 @@
             </g>
           </svg>
         </button>
+        <button id="nextBtn" class="iconButton playlistNav" aria-label="Next track" title="Next track">›</button>
         <button id="loopBtn" class="iconButton" aria-label="Loop" aria-pressed="false" title="Loop the current track">↻</button>
         <button id="freeDriftBtn" class="iconButton freeDriftBtn" aria-label="Free Drift" aria-pressed="false" title="Free Drift — autonomous visuals with no music">FREE DRIFT</button>
         <button id="fullBtn" class="iconButton" aria-label="Fullscreen" title="Enter or exit fullscreen">⛶</button>
@@ -116,7 +121,7 @@
   </main>
 
   <audio id="audio" preload="metadata" playsinline src="./the-cloud-chris-weeks.mp3"></audio>
-  <script src="app.js?v=13.15"></script>
+  <script src="app.js?v=13.16"></script>
 
   <script>
     (() => {

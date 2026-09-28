@@ -1,12 +1,15 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '13.15';
+  const DRIFT_BUILD = '13.16';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
   const fileInput = document.getElementById('fileInput');
   const fileName = document.getElementById('fileName');
   const playBtn = document.getElementById('playBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const queueCount = document.getElementById('queueCount');
   const loopBtn = document.getElementById('loopBtn');
   const freeDriftBtn = document.getElementById('freeDriftBtn');
   const fullBtn = document.getElementById('fullBtn');
@@ -396,7 +399,9 @@
     bass:.46, mid:.48, high:.44, overall:.48, brightness:.50,
     flux:.12, pulse:.04, activity:.28, rhythm:.10
   };
-  let objectURL = null;
+  let objectURL = null; // retained for compatibility with older cleanup paths
+  let playlist = [];
+  let playlistIndex = -1;
   let audioCtx = null;
   let outputGain = null;
   let sourceNode = null;
@@ -912,6 +917,73 @@
     setTimeout(()=>hideUI(),420);
   }
 
+  function revokePlaylistUrls(){
+    for(const item of playlist){
+      if(item && item.url){
+        try { URL.revokeObjectURL(item.url); } catch(e) {}
+      }
+    }
+    playlist=[];
+    playlistIndex=-1;
+  }
+
+  function updateQueueDisplay(){
+    if(usingShowcaseTrack){
+      queueCount.textContent='SHOWCASE';
+      prevBtn.disabled=true;
+      nextBtn.disabled=true;
+      return;
+    }
+    const total=playlist.length;
+    const current=playlistIndex>=0 ? playlistIndex+1 : 0;
+    queueCount.textContent=total ? `${current} / ${total}` : '';
+    prevBtn.disabled=total<2 || playlistIndex<=0;
+    nextBtn.disabled=total<2 || playlistIndex>=total-1;
+  }
+
+  function loadPlaylistTrack(index, autoplay=false){
+    if(!playlist.length) return;
+    index=Math.max(0,Math.min(index,playlist.length-1));
+    playlistIndex=index;
+    const item=playlist[index];
+
+    audio.pause();
+    audio.muted=false;
+    audio.volume=1;
+    if(outputGain) outputGain.gain.value=1;
+    audio.loop=false;
+    loopBtn.setAttribute('aria-pressed','false');
+    audio.src=item.url;
+    audio.load();
+
+    usingShowcaseTrack=false;
+    hasStarted=false;
+    frozenTime=0;
+    previewInitialized=false;
+    calibrated=false;
+    fileName.textContent=item.name;
+    timeNow.textContent='0:00';
+    timeTotal.textContent='0:00';
+    resetJourney();
+    updateQueueDisplay();
+    syncTransportState();
+
+    if(autoplay){
+      // Native media playback remains user-initiated for the first track.
+      // Subsequent tracks are allowed to continue from the existing session.
+      startPlayback();
+    } else {
+      statusEl.textContent=playlist.length>1 ? `Track ${playlistIndex+1} of ${playlist.length} — press play` : 'Ready — press play';
+    }
+  }
+
+  function stepPlaylist(direction, autoplay=false){
+    if(!playlist.length) return;
+    const next=playlistIndex+direction;
+    if(next<0 || next>=playlist.length) return;
+    loadPlaylistTrack(next,autoplay);
+  }
+
   async function startPlayback(){
     stopFreeDrift(false);
     hasStarted=true;
@@ -949,25 +1021,25 @@
   }
 
   fileInput.addEventListener('change', e => {
-    const f=e.target.files && e.target.files[0]; if(!f) return;
+    const files=Array.from(e.target.files || []);
+    if(!files.length) return;
+
     stopFreeDrift(false);
-    if(objectURL) URL.revokeObjectURL(objectURL);
-    objectURL=URL.createObjectURL(f);
+
+    // A user-selected playlist completely replaces the showcase for this session.
+    revokePlaylistUrls();
     usingShowcaseTrack=false;
-    audio.pause();
-    audio.muted=false;
-    audio.src=objectURL;
-    audio.load();
-    hasStarted=false;
-    frozenTime=0;
-    previewInitialized=false;
-    fileName.textContent=f.name;
-    playBtn.disabled=false;
-    seek.disabled=false;
-    timeNow.textContent='0:00';
-    timeTotal.textContent='0:00';
-    resetJourney();
-    syncTransportState();
+    if(objectURL){
+      try { URL.revokeObjectURL(objectURL); } catch(err) {}
+      objectURL=null;
+    }
+
+    playlist=files.map(f=>({name:f.name,url:URL.createObjectURL(f)}));
+    playlistIndex=0;
+    loadPlaylistTrack(0,false);
+
+    // Allow selecting the same files again later if desired.
+    fileInput.value='';
   });
 
   let transportBusy=false;
@@ -990,6 +1062,16 @@
       setTimeout(()=>{ syncTransportState(); transportBusy=false; },80);
     }
   });
+  prevBtn.addEventListener('click',()=>{
+    if(freeDriftActive) stopFreeDrift(false);
+    stepPlaylist(-1,!audio.paused && !audio.ended);
+  });
+
+  nextBtn.addEventListener('click',()=>{
+    if(freeDriftActive) stopFreeDrift(false);
+    stepPlaylist(1,!audio.paused && !audio.ended);
+  });
+
   audio.addEventListener('error',()=>{
     const code=audio.error ? audio.error.code : 0;
     console.warn('Media error',code,audio.currentSrc);
@@ -1037,7 +1119,15 @@
   });
   audio.addEventListener('canplay',syncTransportState);
   audio.addEventListener('pause',()=>{ syncTransportState(); statusEl.textContent=audio.currentTime>0?'Paused':'Ready'; });
-  audio.addEventListener('ended',()=>{ syncTransportState(); statusEl.textContent='Finished'; calibrated=false; });
+  audio.addEventListener('ended',()=>{
+    calibrated=false;
+    if(!usingShowcaseTrack && playlist.length && playlistIndex < playlist.length-1 && !audio.loop){
+      stepPlaylist(1,true);
+      return;
+    }
+    syncTransportState();
+    statusEl.textContent='Finished';
+  });
   audio.addEventListener('emptied',syncTransportState);
   loopBtn.addEventListener('click',()=>{
     audio.loop=!audio.loop; loopBtn.setAttribute('aria-pressed',audio.loop?'true':'false');
@@ -1145,6 +1235,7 @@
   fileName.innerHTML='The Cloud — Chris Weeks<br><span class="showcaseNote">Default showcase track</span>';
   playBtn.disabled=false;
   seek.disabled=false;
+  updateQueueDisplay();
   if(!audio.getAttribute('src')) audio.src=SHOWCASE_SRC;
   audio.load();
   resetJourney();

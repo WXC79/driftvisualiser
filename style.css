@@ -487,3 +487,34 @@ html, body, #gl, #vignette, .ui, .panel, button, label {
   .settings { padding-top: 3px; }
   .settings label { margin-top: 4px; }
 }
+
+
+/* DRIFT 13.16 — simple local playlist */
+.trackInfo {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  margin:10px 2px 14px;
+}
+.trackInfo .filename { margin:0; min-width:0; }
+.queueCount {
+  color:rgba(255,255,255,.38);
+  font-size:9px;
+  letter-spacing:.10em;
+  white-space:nowrap;
+}
+.playlistNav {
+  flex:0 0 42px;
+  font-size:28px;
+  line-height:1;
+  padding:0 3px 2px;
+}
+.transport .cloudTransport {
+  flex:1.15;
+}
+@media (orientation: landscape) and (max-height:560px) {
+  .trackInfo { margin:4px 2px 5px; gap:6px; }
+  .queueCount { font-size:7px; }
+  .playlistNav { flex-basis:30px; font-size:21px; }
+}
