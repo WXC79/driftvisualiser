@@ -274,3 +274,132 @@ html, body, #gl, #vignette, .ui, .panel, button, label {
   letter-spacing: .04em;
   text-transform: uppercase;
 }
+
+
+/* DRIFT 13.8 — opening screen + menu polish */
+.splash {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: var(--drift-viewport-h, 100dvh);
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  color: #050505;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+  transition: opacity .42s ease;
+}
+.splash.leaving { opacity: 0; pointer-events: none; }
+.splash.hidden { display: none; }
+
+.splashMark {
+  width: clamp(154px, 24vw, 206px);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.splashLogo { display:block; width:100%; height:auto; margin:0; }
+.splashWord,
+.splashPrompt {
+  width:100%;
+  margin:0;
+  color:#090909;
+  white-space:nowrap;
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-weight:400;
+}
+.splashWord {
+  margin-top:9px;
+  font-size:clamp(29px,4.4vw,39px);
+  line-height:1;
+  letter-spacing:.34em;
+}
+.splashPrompt {
+  margin-top:10px;
+  font-size:clamp(14px,2.05vw,18px);
+  line-height:1.15;
+  letter-spacing:.19em;
+}
+@media (orientation: landscape) {
+  .splashMark { width:clamp(142px,13.5vw,188px); }
+  .splashWord { margin-top:7px; font-size:clamp(26px,2.7vw,35px); }
+  .splashPrompt { margin-top:8px; font-size:clamp(12px,1.35vw,16px); }
+}
+
+.menuBrand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding-right:44px;
+  margin-bottom:12px;
+}
+.menuBrandLogo {
+  flex:0 0 auto;
+  width:42px;
+  height:42px;
+  object-fit:contain;
+}
+.menuBrandText { min-width:0; }
+.menuBrandName {
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size:19px;
+  line-height:1.05;
+  font-weight:500;
+  letter-spacing:.08em;
+}
+.menuBrandTag {
+  margin-top:4px;
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size:10px;
+  line-height:1.2;
+  color:rgba(255,255,255,.52);
+  letter-spacing:.08em;
+}
+
+@media (orientation: landscape) and (max-height:520px) {
+  .ui {
+    align-items:stretch;
+    justify-items:center;
+    padding:max(5px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
+  }
+  .panel {
+    width:min(760px,96vw);
+    max-height:calc(var(--drift-viewport-h,100dvh) - max(10px,env(safe-area-inset-top)) - max(10px,env(safe-area-inset-bottom)));
+    padding:10px 12px 9px;
+    border-radius:14px;
+  }
+  .menuBrand { gap:9px; margin-bottom:7px; }
+  .menuBrandLogo { width:30px; height:30px; }
+  .menuBrandName { font-size:15px; }
+  .menuBrandTag { font-size:8px; margin-top:2px; }
+  .lede { margin-bottom:7px; font-size:9px; line-height:1.28; }
+  .fileButton { min-height:32px; font-size:10px; }
+  .filename { margin:5px 2px 6px; font-size:9px; }
+  .transport { gap:6px; }
+  .iconButton { min-height:31px; }
+  .cloudTransportSvg { width:52px; height:34px; }
+  .timelineRow { margin-top:6px; font-size:8px; }
+  .settings { margin-top:6px; padding-top:6px; }
+  .settings summary { font-size:8px; }
+  .settings label { grid-template-columns:92px 1fr; margin-top:6px; gap:7px; font-size:8px; }
+  .sceneModeRow select { padding:4px 6px; }
+  .statusLine { margin-top:6px; font-size:8px; }
+  .hint { margin-top:6px; font-size:7.5px; line-height:1.3; }
+  .closeUiBtn { top:7px; right:7px; width:30px; height:30px; font-size:20px; }
+}
+@media (orientation: landscape) and (max-height:390px) {
+  .panel { padding:7px 10px 7px; }
+  .menuBrand { margin-bottom:5px; }
+  .lede { display:none; }
+  .fileButton { min-height:29px; }
+  .filename { margin:4px 2px; }
+  .iconButton { min-height:29px; }
+  .timelineRow { margin-top:4px; }
+  .settings { margin-top:4px; padding-top:4px; }
+  .settings label { margin-top:4px; }
+  .statusLine,.hint { margin-top:4px; }
+}

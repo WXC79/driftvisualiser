@@ -10,8 +10,8 @@
   <meta name="apple-mobile-web-app-title" content="DRIFT" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
-  <meta name="description" content="DRIFT 13.7 — a generative cloud visualiser that works better on phones and shows a still preview before playback." />
-  <title>DRIFT 13.7 — Generative Music Visualiser</title>
+  <meta name="description" content="DRIFT — Generative Cloud Visualizer." />
+  <title>DRIFT — Generative Cloud Visualizer</title>
   <script>
     (function(){
       function standalone(){
@@ -41,17 +41,29 @@
       });
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=13.7" />
+  <link rel="stylesheet" href="style.css?v=13.8" />
 </head>
 <body>
+
+  <div id="splash" class="splash" role="button" tabindex="0" aria-label="Touch to enter DRIFT">
+    <div class="splashMark">
+      <img class="splashLogo" src="drift-logo-master.svg" alt="" />
+      <div class="splashWord">DRIFT</div>
+      <div class="splashPrompt">Touch to Drift</div>
+    </div>
+  </div>
   <canvas id="gl"></canvas>
   <div id="vignette"></div>
 
   <main id="ui" class="ui visible">
     <section class="panel" id="landing">
-      <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>
-      <div class="brand">DRIFT 13.7</div>
-      <h1>GENERATIVE CLOUD VISUALISER</h1>
+      <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>      <div class="menuBrand">
+        <img class="menuBrandLogo" src="drift-logo-master.svg" alt="" />
+        <div class="menuBrandText">
+          <div class="menuBrandName">Drift</div>
+          <div class="menuBrandTag">Generative Cloud Visualizer</div>
+        </div>
+      </div>
       <p class="lede">Play the showcase track, or choose music from your device. Your own files stay local: nothing is uploaded.</p>
 
       <label class="fileButton" for="fileInput" title="Choose a music file from your device">CHOOSE MUSIC</label>
@@ -104,12 +116,12 @@
         <span id="status">Waiting for music</span>
         <span id="scene">BLUE SKY</span>
       </div>
-      <p class="hint"><strong>Double-tap the visual to toggle controls.</strong><br>Music shapes Drift gradually rather than triggering beat-by-beat flashes.</p>
+      <p class="hint"><strong>Double tap the visual to toggle controls.</strong><br>Use landscape mode on your device for the best experience.</p>
     </section>
   </main>
 
   <audio id="audio" preload="metadata" playsinline src="./the-cloud-chris-weeks.mp3"></audio>
-  <script src="app.js?v=13.7"></script>
+  <script src="app.js?v=13.8"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));

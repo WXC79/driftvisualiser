@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '13.7';
+  const DRIFT_BUILD = '13.8';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -21,6 +21,7 @@
   const grainSlider = document.getElementById('grain');
   const sceneMode = document.getElementById('sceneMode');
   const closeUiBtn = document.getElementById('closeUiBtn');
+  const splash = document.getElementById('splash');
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
   if (isStandalone) {
@@ -391,6 +392,7 @@
   let usingShowcaseTrack = true;
   let objectURL = null;
   let audioCtx = null;
+  let outputGain = null;
   let sourceNode = null;
   let analyser = null;
   let freq = null;
@@ -415,8 +417,11 @@
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = 2048;
     analyser.smoothingTimeConstant = 0.52;
+    outputGain = audioCtx.createGain();
+    outputGain.gain.value = 1;
     sourceNode.connect(analyser);
-    analyser.connect(audioCtx.destination);
+    analyser.connect(outputGain);
+    outputGain.connect(audioCtx.destination);
     freq = new Uint8Array(analyser.frequencyBinCount);
     prevFreq = new Uint8Array(analyser.frequencyBinCount);
     timeDomain = new Uint8Array(analyser.fftSize);
@@ -769,13 +774,16 @@
     return actuallyPlaying;
   }
 
-  async function guardBackgroundAudio(){
+  function guardBackgroundAudio(){
     backgroundGuarded=true;
-    // Mute BEFORE pausing: this prevents iOS from leaking a short buffered fragment
-    // when a suspended Home Screen app becomes active again.
-    audio.muted=true;
-    try { if(!audio.paused) audio.pause(); } catch(e) {}
-    try { if(audioCtx && audioCtx.state==='running') await audioCtx.suspend(); } catch(e) {}
+    try {
+      audio.muted=true;
+      if(outputGain) outputGain.gain.value=0;
+      audio.pause();
+    } catch(e) {}
+    try {
+      if(audioCtx && audioCtx.state==='running') audioCtx.suspend().catch(()=>{});
+    } catch(e) {}
     releaseScreenWakeLock();
     syncTransportState();
   }
@@ -784,16 +792,13 @@
     if(document.visibilityState==='hidden'){
       guardBackgroundAudio();
     } else {
-      // Never auto-resume or auto-unmute on return. The next Play tap is the only
-      // thing allowed to re-enable audio.
       syncTransportState();
     }
   });
-  window.addEventListener('pagehide',guardBackgroundAudio);
-  window.addEventListener('blur',()=>{
-    if(document.visibilityState!=='visible') guardBackgroundAudio();
-  });
-
+  window.addEventListener('pagehide',guardBackgroundAudio,{capture:true});
+  window.addEventListener('blur',guardBackgroundAudio,{capture:true});
+  window.addEventListener('freeze',guardBackgroundAudio,{capture:true});
+  document.addEventListener('freeze',guardBackgroundAudio,{capture:true});
   window.addEventListener('pageshow',syncTransportState);
   window.addEventListener('focus',syncTransportState);
 
@@ -801,6 +806,7 @@
     hasStarted=true;
     backgroundGuarded=false;
     audio.muted=false;
+    if(outputGain) outputGain.gain.value=1;
 
     try {
       // Keep the showcase on a plain same-origin MP3 URL so iOS can use native
@@ -813,6 +819,7 @@
       // Start/resume Web Audio without allowing it to block native media playback.
       try {
         ensureAudioGraph();
+        if(outputGain) outputGain.gain.value=1;
         if(audioCtx && audioCtx.state==='suspended') audioCtx.resume().catch(()=>{});
       } catch(graphError) {
         console.warn('Audio analyser unavailable; continuing native playback',graphError);
@@ -1015,6 +1022,24 @@
   });
   ui.addEventListener('input',scheduleUiHide,{passive:true});
   audio.addEventListener('play',showUI);
+
+  function enterDrift(){
+    if(!splash || splash.classList.contains('leaving') || splash.classList.contains('hidden')) return;
+    splash.classList.add('leaving');
+    showUI();
+    setTimeout(()=>splash.classList.add('hidden'),440);
+  }
+
+  if(splash){
+    splash.addEventListener('pointerup',enterDrift,{passive:true});
+    splash.addEventListener('click',enterDrift);
+    splash.addEventListener('keydown',e=>{
+      if(e.key==='Enter' || e.key===' '){
+        e.preventDefault();
+        enterDrift();
+      }
+    });
+  }
 
   // Bundled showcase track: always present on a fresh opening, never autoplayed.
   // Choosing a local file replaces it for the current session.
