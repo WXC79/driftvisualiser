@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '13.16';
+  const DRIFT_BUILD = '13.18';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -26,6 +26,24 @@
   const closeUiBtn = document.getElementById('closeUiBtn');
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
+  // Desktop pointer auto-hide: disappear after brief inactivity, reappear
+  // immediately as soon as the mouse moves again. Touch devices are untouched.
+  let cursorHideTimer=null;
+  function showPointerTemporarily(){
+    if(isTouchDevice) return;
+    document.documentElement.classList.remove('cursorHidden');
+    clearTimeout(cursorHideTimer);
+    cursorHideTimer=setTimeout(()=>{
+      document.documentElement.classList.add('cursorHidden');
+    },1800);
+  }
+  if(!isTouchDevice){
+    window.addEventListener('mousemove',showPointerTemporarily,{passive:true});
+    window.addEventListener('mousedown',showPointerTemporarily,{passive:true});
+    window.addEventListener('mouseenter',showPointerTemporarily,{passive:true});
+    showPointerTemporarily();
+  }
   if (isStandalone) {
     fullBtn.title = 'Running as a Home Screen web app';
     fullBtn.setAttribute('aria-label', 'Home Screen app mode');
@@ -691,8 +709,22 @@
     const rect=canvas.getBoundingClientRect();
     const cssW=Math.max(2,rect.width||innerWidth);
     const cssH=Math.max(2,rect.height||innerHeight);
-    const w=Math.max(2,Math.floor(cssW*dpr*qualityScale));
-    const h=Math.max(2,Math.floor(cssH*dpr*qualityScale));
+    let w=Math.max(2,Math.floor(cssW*dpr*qualityScale));
+    let h=Math.max(2,Math.floor(cssH*dpr*qualityScale));
+
+    // Large desktop/Retina browser windows can otherwise create a much heavier
+    // render target than the phone build was designed around. Keep phone/touch
+    // rendering untouched, but cap the long edge on desktop for smoother playback.
+    if(!isTouchDevice){
+      const maxDesktopEdge=1728;
+      const edge=Math.max(w,h);
+      if(edge>maxDesktopEdge){
+        const scale=maxDesktopEdge/edge;
+        w=Math.max(2,Math.floor(w*scale));
+        h=Math.max(2,Math.floor(h*scale));
+      }
+    }
+
     if(canvas.width!==w||canvas.height!==h){
       canvas.width=w;
       canvas.height=h;
@@ -850,8 +882,12 @@
       syncTransportState();
     }
   });
+  window.addEventListener('blur',()=>{
+    setTimeout(()=>{
+      if(document.visibilityState==='hidden') guardBackgroundAudio();
+    },180);
+  },{capture:true});
   window.addEventListener('pagehide',guardBackgroundAudio,{capture:true});
-  window.addEventListener('blur',guardBackgroundAudio,{capture:true});
   window.addEventListener('freeze',guardBackgroundAudio,{capture:true});
   document.addEventListener('freeze',guardBackgroundAudio,{capture:true});
   window.addEventListener('pageshow',syncTransportState);
@@ -1167,6 +1203,19 @@
       console.warn(e);
     }
   });
+
+  const reconcileFullscreenPlayback = () => {
+    resize();
+    // Fullscreen UI transitions must not be treated as leaving DRIFT.
+    // If Web Audio was suspended by the browser while native media continued,
+    // resume the analyser/output graph without restarting or seeking the track.
+    if(!audio.paused && audioCtx && audioCtx.state==='suspended'){
+      audioCtx.resume().catch(()=>{});
+    }
+    syncTransportState();
+  };
+  document.addEventListener('fullscreenchange',reconcileFullscreenPlayback);
+  document.addEventListener('webkitfullscreenchange',reconcileFullscreenPlayback);
 
   let hideTimer=null;
   let initialMenuPinned=true;

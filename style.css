@@ -518,3 +518,12 @@ html, body, #gl, #vignette, .ui, .panel, button, label {
   .queueCount { font-size:7px; }
   .playlistNav { flex-basis:30px; font-size:21px; }
 }
+
+
+/* DRIFT 13.18 — desktop mouse pointer auto-hide */
+@media (pointer:fine) {
+  html.cursorHidden,
+  html.cursorHidden * {
+    cursor: none !important;
+  }
+}
