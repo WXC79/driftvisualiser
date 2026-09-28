@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '13.18';
+  const DRIFT_BUILD = '13.19';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -1219,6 +1219,7 @@
 
   let hideTimer=null;
   let initialMenuPinned=true;
+  let suppressMouseRevealUntil=0;
 
   function scheduleUiHide(){
     clearTimeout(hideTimer);
@@ -1234,15 +1235,21 @@
   function hideUI(){
     clearTimeout(hideTimer);
     initialMenuPinned=false;
+    suppressMouseRevealUntil=performance.now()+650;
     ui.classList.remove('visible');
   }
   closeUiBtn.addEventListener('click',e=>{ e.stopPropagation(); hideUI(); });
 
   let lastRevealTap=0;
   if(!isTouchDevice){
-    document.addEventListener('pointermove',showUI,{passive:true});
+    document.addEventListener('pointermove',()=>{
+      if(performance.now() < suppressMouseRevealUntil) return;
+      if(!ui.classList.contains('visible')) showUI();
+    },{passive:true});
     document.addEventListener('pointerdown',e=>{
-      if(e.target===canvas || e.target.id==='vignette') showUI();
+      if(e.target===canvas || e.target.id==='vignette'){
+        if(performance.now() >= suppressMouseRevealUntil) showUI();
+      }
     },{passive:true});
   } else {
     const isVisualTouchTarget = (e) => e.target===canvas || e.target===ui || e.target.id==='vignette';

@@ -41,7 +41,7 @@
       });
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=13.18" />
+  <link rel="stylesheet" href="style.css?v=13.19" />
 </head>
 <body>
   <div id="splash" class="splash" role="button" tabindex="0" aria-label="Touch to Drift">
@@ -55,7 +55,7 @@
     <section class="panel" id="landing">
       <button id="closeUiBtn" class="closeUiBtn" aria-label="Close controls" title="Hide the controls">×</button>      <div class="menuBrand menuBrandTextOnly">
         <div class="menuBrandText">
-          <div class="menuBrandName">Drift</div>
+          <div class="menuBrandName">D R I F T</div>
           <div class="menuBrandTag">Generative Cloud Visualizer</div>
         </div>
       </div>
@@ -93,7 +93,7 @@
       </div>
 
       <details class="settings">
-        <summary>VISUAL SETTINGS</summary>
+        <summary data-tooltip="Choose a scene, or adjust visual intensity, forward motion and grain.">VISUAL SETTINGS</summary>
         <label class="sceneModeRow"><span>Scene mode</span>
           <select id="sceneMode" title="Auto follows the music and moves between scenes; choose a scene to lock the visual style">
             <option value="auto" selected>AUTO</option>
@@ -121,7 +121,7 @@
   </main>
 
   <audio id="audio" preload="metadata" playsinline src="./the-cloud-chris-weeks.mp3"></audio>
-  <script src="app.js?v=13.18"></script>
+  <script src="app.js?v=13.19"></script>
 
   <script>
     (() => {

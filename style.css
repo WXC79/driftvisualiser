@@ -527,3 +527,43 @@ html, body, #gl, #vignette, .ui, .panel, button, label {
     cursor: none !important;
   }
 }
+
+
+/* DRIFT 13.19 — menu interaction + visual-settings hover help */
+.settings summary {
+  position: relative;
+  transition: color .14s ease;
+}
+@media (hover:hover) and (pointer:fine) {
+  .settings summary:hover,
+  .settings summary:focus-visible {
+    color:#fff;
+  }
+  .settings summary::after {
+    content: attr(data-tooltip);
+    position:absolute;
+    left:0;
+    bottom:calc(100% + 9px);
+    width:min(300px, 72vw);
+    padding:8px 10px;
+    border-radius:9px;
+    background:rgba(10,12,16,.94);
+    border:1px solid rgba(255,255,255,.13);
+    color:rgba(255,255,255,.88);
+    font-size:9px;
+    line-height:1.35;
+    letter-spacing:.03em;
+    text-transform:none;
+    opacity:0;
+    transform:translateY(3px);
+    pointer-events:none;
+    transition:opacity .14s ease, transform .14s ease;
+    z-index:20;
+    box-shadow:0 8px 24px rgba(0,0,0,.28);
+  }
+  .settings summary:hover::after,
+  .settings summary:focus-visible::after {
+    opacity:1;
+    transform:translateY(0);
+  }
+}

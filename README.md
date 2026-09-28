@@ -1,18 +1,21 @@
-# DRIFT 13.18 — Cursor Auto-Hide
+# DRIFT 13.19 — Menu Fix
 
-Built from 13.17.
+Built from 13.18.
 
-Added:
-- On desktop/mouse devices, the pointer hides after 1.8 seconds of inactivity.
-- The pointer reappears immediately when the mouse moves or is clicked.
-- Touch devices are unaffected.
+Changes:
+- Fixed the desktop X-close behavior. Mouse movement can no longer instantly
+  reopen the menu immediately after it is closed.
+- Menu product name now displays exactly as: D R I F T
+- VISUAL SETTINGS turns white on hover/focus.
+- Hovering VISUAL SETTINGS on a mouse/desktop device now shows a compact help
+  popup explaining that it contains scene selection, visual intensity,
+  forward motion and grain controls.
 
 Preserved:
+- cursor auto-hide
 - browser/fullscreen playback fix
 - playlist support
 - Free Drift
-- user-supplied home screen
-- AUTO/manual scene controls
+- home-screen artwork
+- AUTO/manual scenes
 - landscape menu fitting
-- showcase track
-- background-audio hard stop only for genuine app/page leaving
