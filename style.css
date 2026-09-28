@@ -279,45 +279,6 @@ html, body, #gl, #vignette, .ui, .panel, button, label {
 
 
 
-/* DRIFT 13.9 — exact approved opening lockup */
-.splash {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: var(--drift-viewport-h, 100dvh);
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  background: #fff;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  user-select: none;
-  transition: opacity .38s ease;
-}
-.splash.leaving { opacity: 0; pointer-events: none; }
-.splash.hidden { display: none; }
-
-/*
-  This is ONE traced vector lockup from the user's approved reference image.
-  Logo, DRIFT, and Touch to Drift therefore cannot drift out of alignment.
-*/
-.splashLockup {
-  display: block;
-  width: min(29vw, 214px);
-  height: auto;
-  max-height: 31vh;
-  object-fit: contain;
-}
-
-/* Landscape: same exact lockup, centered, simply scaled for available height. */
-@media (orientation: landscape) {
-  .splashLockup {
-    width: min(15vw, 190px);
-    max-height: 42vh;
-  }
-}
-
 /* Menu identity */
 .menuBrand {
   display:flex;
@@ -392,4 +353,61 @@ html, body, #gl, #vignette, .ui, .panel, button, label {
   .settings { margin-top:4px; padding-top:4px; }
   .settings label { margin-top:4px; }
   .statusLine,.hint { margin-top:4px; }
+}
+
+
+/* DRIFT 13.10 — clean vector opening lockup */
+.splash {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: var(--drift-viewport-h, 100dvh);
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+  transition: opacity .38s ease;
+}
+.splash.leaving { opacity: 0; pointer-events: none; }
+.splash.hidden { display: none; }
+
+.splashLockup {
+  display: block;
+  width: 184px;
+  height: auto;
+  max-width: 31vw;
+  max-height: 31vh;
+  object-fit: contain;
+}
+
+@media (orientation: landscape) {
+  .splashLockup {
+    width: 170px;
+    max-width: 16vw;
+    max-height: 42vh;
+  }
+}
+
+
+/* DRIFT 13.11 — text-only menu branding */
+.menuBrandTextOnly {
+  gap: 0;
+  padding-right: 44px;
+}
+.menuBrandTextOnly .menuBrandText {
+  width: 100%;
+}
+.menuBrandTextOnly .menuBrandName {
+  font-size: 21px;
+}
+.menuBrandTextOnly .menuBrandTag {
+  font-size: 10px;
+}
+@media (orientation: landscape) and (max-height:520px) {
+  .menuBrandTextOnly .menuBrandName { font-size: 16px; }
+  .menuBrandTextOnly .menuBrandTag { font-size: 8px; }
 }

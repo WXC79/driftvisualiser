@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '13.9';
+  const DRIFT_BUILD = '13.11';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
