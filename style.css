@@ -411,3 +411,23 @@ html, body, #gl, #vignette, .ui, .panel, button, label {
   .menuBrandTextOnly .menuBrandName { font-size: 16px; }
   .menuBrandTextOnly .menuBrandTag { font-size: 8px; }
 }
+
+
+/* DRIFT 13.12 — approved exact aligned splash lockup */
+.splashLockup {
+  display: block;
+  width: 20.5vw;
+  max-width: 184px;
+  min-width: 154px;
+  height: auto;
+  max-height: 34vh;
+  object-fit: contain;
+}
+@media (orientation: landscape) {
+  .splashLockup {
+    width: 13.8vw;
+    max-width: 177px;
+    min-width: 138px;
+    max-height: 44vh;
+  }
+}

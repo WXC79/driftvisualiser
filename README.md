@@ -1,19 +1,14 @@
-# DRIFT 13.11 — Text-Only Menu Header
+# DRIFT 13.12 — Exact Aligned Splash
 
-Built directly from 13.10.
+The opening lockup has been rebuilt as one vector asset using the approved geometry.
 
-Change:
-- Removed the DRIFT logo from the control menu.
-- Menu header is now text-only:
-  - Drift
-  - Generative Cloud Visualizer
+Exact alignment:
+- logo width: 177 units
+- DRIFT width: 177 units
+- Touch to Drift width: 177 units
+- all three begin on exactly the same left vertical
+- all three finish on exactly the same right vertical
+- DRIFT and Touch to Drift are vector outlines, not live browser font rendering
+- no JPEG tracing is used
 
-Preserved:
-- clean vector opening splash
-- exact centered portrait/landscape opening screen
-- bundled showcase track
-- hard background audio stop
-- landscape menu fitting
-- no touch-cloud system
-- Night scene fix
-- portrait fullscreen workaround
+Everything else from 13.11 is preserved.
