@@ -1251,12 +1251,12 @@
     // Desktop: moving the mouse only brings the pointer back.
     // The menu stays closed until the user deliberately clicks the visual.
     document.addEventListener('pointerdown',e=>{
-      if(e.target===canvas || e.target.id==='vignette'){
+      if(e.target===canvas){
         if(!ui.classList.contains('visible')) showUI();
       }
     },{passive:true});
   } else {
-    const isVisualTouchTarget = (e) => e.target===canvas || e.target===ui || e.target.id==='vignette';
+    const isVisualTouchTarget = (e) => e.target===canvas || e.target===ui;
 
     const preventIOSGesture = e => {
       if(isVisualTouchTarget(e)) e.preventDefault();

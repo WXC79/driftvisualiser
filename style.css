@@ -29,15 +29,6 @@ body {
   display:block;
   background:#05070b;
 }
-#vignette {
-  position:fixed;
-  top:0;
-  left:0;
-  width:100vw;
-  height:var(--drift-viewport-h, 100dvh);
-  pointer-events:none;
-  background: radial-gradient(circle at 50% 45%, transparent 46%, rgba(0,0,0,.08) 72%, rgba(0,0,0,.28) 118%);
-}
 .ui {
   position:fixed;
   top:0;
@@ -189,10 +180,10 @@ input[type="range"] { width:100%; accent-color:#e8ebee; }
    The live JS value uses screen.height when iOS reports a shorter standalone viewport.
    CSS fallbacks cover iOS versions where safe-area values remain valid. */
 @media (display-mode: standalone) and (orientation: portrait) {
-  html, body, #gl, #vignette, .ui {
+  html, body, #gl, .ui {
     min-height: calc(100dvh + env(safe-area-inset-bottom));
   }
-  #gl, #vignette, .ui {
+  #gl, .ui {
     height: var(--drift-viewport-h, calc(100lvh + env(safe-area-inset-bottom)));
   }
 }
@@ -253,7 +244,7 @@ input[type="range"] { width:100%; accent-color:#e8ebee; }
 
 
 /* 13.0 — suppress iOS selection/callout during long-hold cloud interaction */
-html, body, #gl, #vignette, .ui, .panel, button, label {
+html, body, #gl, .ui, .panel, button, label {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;

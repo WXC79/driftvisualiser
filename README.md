@@ -22,3 +22,7 @@ Preserved:
 - landscape phone menu fitting
 - exact user-supplied home screen
 - showcase track
+
+
+## 14.1 display fix
+Removed the CSS radial vignette overlay that could produce visible contour/banding rings when the controls panel was open. No cloud-generation behavior was changed.
