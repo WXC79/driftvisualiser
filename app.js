@@ -235,8 +235,8 @@
 
       vec3 dayShadow=vec3(0.16,0.21,0.28);
       vec3 dayLight=vec3(0.90,0.92,0.94);
-      dayShadow=mix(dayShadow,vec3(0.36,0.22,0.27),sunrise*0.68);
-      dayLight=mix(dayLight,vec3(1.00,0.71,0.46),sunrise*0.94);
+      dayShadow=mix(dayShadow,vec3(0.35,0.22,0.26),sunrise*0.68);
+      dayLight=mix(dayLight,vec3(1.00,0.77,0.60),sunrise*0.94);
       dayShadow=mix(dayShadow,vec3(0.66,0.68,0.66),sunlight*0.88);
       dayLight=mix(dayLight,vec3(0.98,0.97,0.91),sunlight*0.92);
       dayShadow=mix(dayShadow,vec3(0.38,0.22,0.24),sunset*0.74);
@@ -361,8 +361,9 @@
     float sunriseLuma=dot(base,vec3(0.2126,0.7152,0.0722));
     vec3 sunriseSat=mix(vec3(sunriseLuma),base,1.14);
     vec3 sunriseContrast=(sunriseSat-vec3(0.40))*1.09+vec3(0.40);
-    sunriseContrast*=vec3(1.035,1.005,0.970);
-    base=mix(base,sunriseContrast,sunrise*0.72);
+    sunriseContrast*=vec3(1.020,1.010,0.992);
+    vec3 sunriseLift=mix(sunriseContrast,vec3(0.98,0.94,0.90),0.055*cloudImmersion);
+    base=mix(base,sunriseLift,sunrise*0.74);
 
     vec3 darkContrast=(base-vec3(0.30))*1.11+vec3(0.30);
     darkContrast-=vec3(0.010,0.010,0.009);
