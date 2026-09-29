@@ -1087,25 +1087,21 @@
       objectURL=null;
     }
 
-    // Preserve the chooser's order by default. If the selected files use
-    // leading track numbers (e.g. 1, 2, 03, 10), sort them by that numeric
-    // prefix so album playlists load in the intended sequence.
-    const numbered = files.map((f, originalIndex) => {
-      const match = f.name.match(/^\s*(\d+)\b/);
-      return { file:f, originalIndex, trackNumber:match ? Number(match[1]) : null };
+    // Mobile browsers can return a multi-file selection in an arbitrary order.
+    // Sort the selected filenames using a numeric-aware natural sort so common
+    // album names such as "01 Track", "Artist - 02 - Track", ... "10 Track"
+    // always land in track-number order regardless of where the number appears.
+    const naturalTrackOrder = new Intl.Collator(undefined, {
+      numeric: true,
+      sensitivity: 'base'
     });
-    const numberedCount = numbered.filter(x => x.trackNumber !== null).length;
-    const orderedFiles = numberedCount >= 2
-      ? numbered.sort((a,b) => {
-          if(a.trackNumber !== null && b.trackNumber !== null){
-            if(a.trackNumber !== b.trackNumber) return a.trackNumber - b.trackNumber;
-            return a.originalIndex - b.originalIndex;
-          }
-          if(a.trackNumber !== null) return -1;
-          if(b.trackNumber !== null) return 1;
-          return a.originalIndex - b.originalIndex;
-        }).map(x => x.file)
-      : files;
+    const orderedFiles = files
+      .map((file, originalIndex) => ({file, originalIndex}))
+      .sort((a,b) => {
+        const byName = naturalTrackOrder.compare(a.file.name, b.file.name);
+        return byName || (a.originalIndex - b.originalIndex);
+      })
+      .map(x => x.file);
 
     playlist=orderedFiles.map(f=>({name:f.name,url:URL.createObjectURL(f)}));
     playlistIndex=0;
