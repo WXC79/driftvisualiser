@@ -1094,7 +1094,10 @@
   }
 
   fileInput.addEventListener('change', e => {
-    const files=Array.from(e.target.files || []);
+    // Browsers do not guarantee that FileList preserves Finder's filename order.
+    // Always use natural numeric filename sorting so 1, 2, 3 ... 10 stays sequential.
+    const naturalFileOrder = new Intl.Collator(undefined, { numeric:true, sensitivity:'base' });
+    const files=Array.from(e.target.files || []).sort((a,b)=>naturalFileOrder.compare(a.name,b.name));
     if(!files.length) return;
 
     stopFreeDrift(false);
