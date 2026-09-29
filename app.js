@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DRIFT_BUILD = '14.0';
+  const DRIFT_BUILD = '14.2';
 
   const canvas = document.getElementById('gl');
   const audio = document.getElementById('audio');
@@ -284,7 +284,7 @@
       vec3 flashCenter=ro+forward*82.0+right*(sin(uTime*0.17+uSeed.x)*34.0)+up*(cos(uTime*0.13+uSeed.y)*18.0);
       vec3 fd=(p-flashCenter)/vec3(42.0,30.0,48.0);
       float localFlash=exp(-dot(fd,fd)*2.6);
-      cloud+=vec3(1.00,0.66,0.16)*lightning*localFlash*dens*(0.32+edge*1.20+(1.0-interior)*0.24);
+      cloud+=vec3(1.00,0.66,0.16)*lightning*localFlash*dens*(0.32+edge*1.20+(1.0-interior)*0.24)*1.35;
 
       float sunFacing=sunDot*sunDot;
       float sunCycle=pow(max(0.0,sin(uTime*0.035+uSeed.x*1.41+uSeed.y*0.53)),6.0);
@@ -355,6 +355,11 @@
     base=mix(base, vec3(min(base.r+0.010,1.0), min(base.g+0.008,1.0), min(base.b+0.002,1.0)), sunlight*0.14);
     base=mix(base,vec3(0.43,0.44,0.45),darkP*(1.0-cloudImmersion)*0.018);
     base=mix(base,vec3(0.20,0.21,0.22),storm*(1.0-cloudImmersion)*0.020);
+    // Restore THUNDERSTORM depth without the old CSS radial vignette.
+    // Scene-local contrast avoids the visible concentric contour bands while
+    // bringing back darker pockets, brighter cloud edges and stronger flashes.
+    vec3 stormContrast=(base-vec3(0.18))*1.24+vec3(0.18);
+    base=mix(base,stormContrast,storm*0.72);
     base=mix(base, vec3(0.13,0.14,0.17), night*cloudImmersion*0.040);
     float skyDither=(noise2(uv*vec2(503.0,337.0)+vec2(uTime*0.07,-uTime*0.05)+uSeed*2.3)-0.5);
     float mistDither=(noise2(vec2(uv.x*719.3+uv.y*211.7, uv.x*-317.9+uv.y*631.1)+uSeed*5.7)-0.5);
